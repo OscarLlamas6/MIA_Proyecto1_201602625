@@ -1,0 +1,4 @@
+#Crea un disco de 300kb en la carpeta home
+-NamE->Disco_3.dsk \* #nombre del disco
+fdisk -path->"/home/oscar/go/src" -name->Disco4.dsk -unit->M \*
+-type->P -fit->bf -delete->fast
