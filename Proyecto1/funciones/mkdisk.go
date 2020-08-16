@@ -1,11 +1,16 @@
 package funciones
 
 import (
+	"Proyecto1/estructuras"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //EjecutarMkDisk function
@@ -22,8 +27,6 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 
 				valorSize = i
 				if err := ensureDir(path); err == nil {
-
-					fmt.Println("Ejecutando MKDISK")
 
 					if strings.ToLower(unit) == "m" || unit == "" || strings.ToLower(unit) == "k" {
 
@@ -50,9 +53,28 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 
 						data := make([]byte, valorReal) //-size=2 -unit=K
 						file.Write(data)                //Escribir datos como un arreglo de bytes
-						file.Close()
 
-						/////TOCA ESCRIBIR EL MBR EN EL NUEVO DISCO
+						// Convirtiendo string "valorreal" a uint32
+						mUsize := uint32(valorReal)
+						//Creando nuevo mbr
+						s := estructuras.MBR{}
+						//Asignando valor Msize (uint32)
+						s.Msize = mUsize
+						//Obteniendo fecha y hora actual, guardando como cadena, y asignando como Mdate
+						var chars [20]byte
+						t := time.Now()
+						cadena := t.Format("2006-01-02 15:04:05")
+						copy(chars[:], cadena)
+						copy(s.Mdate[:], chars[:])
+						//Generando valor random y asignando como Msignature
+						s.Msignature = rand.Uint32()
+						//Escribiendo MBR en el archivo binario (disco)
+						file.Seek(0, 0)
+						m1 := &s
+						var binario bytes.Buffer
+						binary.Write(&binario, binary.BigEndian, m1)
+						escribirBytes(file, binario.Bytes())
+						file.Close()
 
 					} else {
 						fmt.Println("Parámetro 'unit' inválido")
@@ -85,5 +107,24 @@ func ensureDir(dirName string) error {
 		return nil
 	}
 	return err
+}
 
+func escribirBytes(file *os.File, bytes []byte) {
+	_, err := file.Write(bytes)
+
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+}
+
+func leerBytes(file *os.File, number int) []byte {
+	bytes := make([]byte, number) //array de bytes
+
+	_, err := file.Read(bytes) // Leido -> bytes
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return bytes
 }
