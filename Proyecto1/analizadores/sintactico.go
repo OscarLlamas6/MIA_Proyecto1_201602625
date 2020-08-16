@@ -2,15 +2,37 @@ package analizadores
 
 import (
 	"Proyecto1/estructuras"
+	"Proyecto1/funciones"
 	"fmt"
 )
 
 var (
 	syntaxError                                                 bool = false
-	pSize, pPath, pName, pUnit, pType, pFit, pDelete, pAdd, pID bool = false, false, false, false, false, false, false, false, false
 	token                                                       int  = -1
 	tokenAux                                                    *estructuras.Token
+	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID string = "", "", "", "", "", "", "", "", ""
+	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount             bool   = false, false, false, false, false
 )
+
+func resetearBanderas() {
+	ejFdisk = false
+	ejMkdisk = false
+	ejRmdisk = false
+	ejMount = false
+	ejUnmount = false
+}
+
+func resetearValores() {
+	vSize = ""
+	vPath = ""
+	vName = ""
+	vUnit = ""
+	vType = ""
+	vFit = ""
+	vDelete = ""
+	vAdd = ""
+	vID = ""
+}
 
 //Sintactico fuction
 func Sintactico() {
@@ -80,7 +102,13 @@ func inicio() {
 		}
 
 	} else if tokenAux.GetTipo() == "TK_MKDISK" {
+		ejMkdisk = true
 		paramMkDisk()
+		if ejMkdisk {
+			funciones.EjecutarMkDisk(vSize, vPath, vName, vUnit)
+			resetearBanderas()
+			resetearValores()
+		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_FDISK" {
 		paramFDisk()
@@ -128,11 +156,15 @@ func paramMkDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_NUM") {
 				//SETEAR SIZE
+				vSize = tokenAux.GetLexema()
 				otroParamMkDisk()
+
 			} else {
+				ejMkdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejMkdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_PATH") {
@@ -141,11 +173,14 @@ func paramMkDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_DIR") {
 				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
 				otroParamMkDisk()
 			} else {
+				ejMkdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejMkdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_NAME") {
@@ -154,11 +189,14 @@ func paramMkDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_ID") {
 				//SETEAR NAME
+				vName = tokenAux.GetLexema()
 				otroParamMkDisk()
 			} else {
+				ejMkdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejMkdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_UNIT") {
@@ -167,14 +205,18 @@ func paramMkDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_BYTES") {
 				//SETEAR BYTES
+				vUnit = tokenAux.GetLexema()
 				otroParamMkDisk()
 			} else {
+				ejMkdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejMkdisk = false
 			syntaxError = true
 		}
 	} else {
+		ejMkdisk = false
 		syntaxError = true
 		fmt.Println("Se esperaba -size, -path, -name, etc.")
 	}
