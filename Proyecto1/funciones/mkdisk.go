@@ -23,7 +23,7 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 
 		if strings.HasSuffix(strings.ToLower(name), ".dsk") {
 
-			if i, err := strconv.Atoi(size); i > 0 {
+			if i, _ := strconv.Atoi(size); i > 0 {
 
 				valorSize = i
 				if err := ensureDir(path); err == nil {
@@ -32,49 +32,55 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 
 						fullName := path + name
 
-						if strings.ToLower(unit) == "m" || unit == "" {
-							valorBytes = 1024 * 1024
+						if !fileExists(fullName) {
+							if strings.ToLower(unit) == "m" || unit == "" {
+								valorBytes = 1024 * 1024
+							} else {
+								valorBytes = 1024
+							}
+
+							valorReal := valorSize * valorBytes
+
+							file, err := os.Create(fullName) //Crea un nuevo archivo
+							if err != nil {
+								panic(err)
+							}
+
+							// Change permissions Linux.
+							err = os.Chmod(fullName, 0777)
+							if err != nil {
+								log.Println(err)
+							}
+
+							data := make([]byte, valorReal) //-size=2 -unit=K
+							file.Write(data)                //Escribir datos como un arreglo de bytes
+
+							// Convirtiendo string "valorreal" a uint32
+							mUsize := uint32(valorReal)
+							//Creando nuevo mbr
+							s := estructuras.MBR{}
+							//Asignando valor Msize (uint32)
+							s.Msize = mUsize
+							//Obteniendo fecha y hora actual, guardando como cadena, y asignando como Mdate
+							var chars [20]byte
+							t := time.Now()
+							cadena := t.Format("2006-01-02 15:04:05")
+							copy(chars[:], cadena)
+							copy(s.Mdate[:], chars[:])
+							//Generando valor random y asignando como Msignature
+							s.Msignature = rand.Uint32()
+							//Escribiendo MBR en el archivo binario (disco)
+							file.Seek(0, 0)
+							m1 := &s
+							var binario bytes.Buffer
+							binary.Write(&binario, binary.BigEndian, m1)
+							escribirBytes(file, binario.Bytes())
+							file.Close()
+
 						} else {
-							valorBytes = 1024
+
+							fmt.Println("Este disco ya existe, intente con otro nombre.")
 						}
-
-						valorReal := valorSize * valorBytes
-
-						file, err := os.Create(fullName) //Crea un nuevo archivo
-						if err != nil {
-							panic(err)
-						}
-
-						// Change permissions Linux.
-						err = os.Chmod(fullName, 0777)
-						if err != nil {
-							log.Println(err)
-						}
-
-						data := make([]byte, valorReal) //-size=2 -unit=K
-						file.Write(data)                //Escribir datos como un arreglo de bytes
-
-						// Convirtiendo string "valorreal" a uint32
-						mUsize := uint32(valorReal)
-						//Creando nuevo mbr
-						s := estructuras.MBR{}
-						//Asignando valor Msize (uint32)
-						s.Msize = mUsize
-						//Obteniendo fecha y hora actual, guardando como cadena, y asignando como Mdate
-						var chars [20]byte
-						t := time.Now()
-						cadena := t.Format("2006-01-02 15:04:05")
-						copy(chars[:], cadena)
-						copy(s.Mdate[:], chars[:])
-						//Generando valor random y asignando como Msignature
-						s.Msignature = rand.Uint32()
-						//Escribiendo MBR en el archivo binario (disco)
-						file.Seek(0, 0)
-						m1 := &s
-						var binario bytes.Buffer
-						binary.Write(&binario, binary.BigEndian, m1)
-						escribirBytes(file, binario.Bytes())
-						file.Close()
 
 					} else {
 						fmt.Println("Parámetro 'unit' inválido")
@@ -82,12 +88,12 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 
 				} else {
 					fmt.Println("Directorio inválido")
-					panic(err)
+					fmt.Println(err)
 				}
 
 			} else {
 				fmt.Println("El size debe ser mayor que cero.")
-				panic(err)
+
 			}
 
 		} else {
@@ -95,7 +101,7 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 		}
 
 	} else {
-		fmt.Println("Faltan parámetros obligatorio en la función MKDISK")
+		fmt.Println("Faltan parámetros obligatorios en la función MKDISK")
 	}
 }
 

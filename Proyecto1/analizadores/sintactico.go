@@ -111,7 +111,13 @@ func inicio() {
 		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_FDISK" {
+		ejFdisk = true
 		paramFDisk()
+		if ejFdisk {
+			funciones.EjecutarFDisk(vSize, vUnit, vPath, vType, vFit, vDelete, vName, vAdd)
+			resetearBanderas()
+			resetearValores()
+		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_MNT" {
 		paramMount()
@@ -128,6 +134,7 @@ func inicio() {
 					if tokenCorrecto(tokenAux, "TK_ID") {
 						//Guardar ID
 						otroID()
+						otraInstruccion()
 					} else {
 						syntaxError = true
 					}
@@ -238,11 +245,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_NUM") {
 				//SETEAR SIZE
+				vSize = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_UNIT") {
@@ -251,11 +261,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_BYTES") {
 				//SETEAR BYTES
+				vUnit = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_PATH") {
@@ -264,11 +277,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_FILE") {
 				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_TYPE") {
@@ -277,11 +293,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_PEL") {
 				//SETEAR TYPE
+				vType = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_FIT") {
@@ -290,11 +309,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_BFW") {
 				//SETEAR FIT
+				vFit = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_DEL") {
@@ -303,11 +325,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_FF") {
 				//SETEAR DELETE MODE
+				vDelete = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_NAME") {
@@ -316,11 +341,14 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_ID") {
 				//SETEAR NAME
+				vName = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_ADD") {
@@ -329,14 +357,18 @@ func paramFDisk() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_NUM") {
 				//SETEAR NUM
+				vAdd = tokenAux.GetLexema()
 				otroParamFDisk()
 			} else {
+				ejFdisk = false
 				syntaxError = true
 			}
 		} else {
+			ejFdisk = false
 			syntaxError = true
 		}
 	} else {
+		ejFdisk = false
 		syntaxError = true
 		fmt.Println("Se esperaba -size, -path, -name, etc.")
 	}
