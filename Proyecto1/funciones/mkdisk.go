@@ -47,7 +47,7 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 							}
 
 							// Change permissions Linux.
-							err = os.Chmod(fullName, 0777)
+							err = os.Chmod(fullName, 0666)
 							if err != nil {
 								log.Println(err)
 							}
