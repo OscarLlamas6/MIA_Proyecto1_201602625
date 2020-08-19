@@ -357,6 +357,13 @@ func CrearPrimariaOExtendida(indiceMBR int, start int, size int, path string, fi
 
 	if strings.ToLower(tipo) == "e" {
 		//CREAR Y ALMACENAR EBR
+		e := estructuras.EBR{}
+		e.Enext = -1
+		file.Seek(int64(start), 0)
+		ebr1 := &e
+		var binario1 bytes.Buffer
+		binary.Write(&binario1, binary.BigEndian, ebr1)
+		escribirBytes(file, binario1.Bytes())
 	}
 
 	file.Close()
