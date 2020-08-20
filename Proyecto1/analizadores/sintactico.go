@@ -90,6 +90,10 @@ func inicio() {
 				tokenAux = nextToken()
 				if tokenCorrecto(tokenAux, "TK_FILE") {
 					//BORRAR DISCO
+					vPath = tokenAux.GetLexema()
+					funciones.EjecutarRmDisk(vPath)
+					resetearBanderas()
+					resetearValores()
 					otraInstruccion()
 				} else {
 					syntaxError = true

@@ -368,3 +368,15 @@ func CrearPrimariaOExtendida(indiceMBR int, start int, size int, path string, fi
 
 	file.Close()
 }
+
+//EspacioDisponibleExtendida function, en caso de revolver TRUE, el valor entero es el byte de inicio para la nueva particion
+func EspacioDisponibleExtendida(size int, path string, ebrStart int) (bool, int) {
+
+	file, err := os.Open(path)
+	if err != nil { //validar que no sea nulo.
+		panic(err)
+	}
+
+	file.Close()
+	return false, 0
+}
