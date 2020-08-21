@@ -2,10 +2,12 @@ package funciones
 
 import (
 	"Proyecto1/estructuras"
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -62,6 +64,67 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 
 	} else if delete != "" && add == "" { // Fdisk para eliminar una particion
 
+		if path != "" && name != "" {
+
+			if strings.HasSuffix(strings.ToLower(path), ".dsk") {
+
+				if fileExists(path) {
+
+					ExisteP, IndiceP := ExisteParticion(path, name)
+
+					if ExisteP {
+
+						fmt.Println("¿Está segur@ que desea borrar esta partición?")
+
+						pedir := true
+						linea := ""
+
+						for pedir {
+							reader := bufio.NewReader(os.Stdin)
+							input, _ := reader.ReadString('\n')
+
+							if runtime.GOOS == "windows" {
+								input = strings.TrimRight(input, "\r\n")
+							} else {
+								input = strings.TrimRight(input, "\n")
+							}
+
+							if strings.ToLower(input) == "n" || strings.ToLower(input) == "y" {
+								linea = input
+								pedir = false
+							}
+
+						}
+
+						if strings.ToLower(linea) == "y" {
+
+							if strings.ToLower(delete) == "fast" {
+								EliminacionFast(path, IndiceP)
+
+							} else if strings.ToLower(delete) == "full" {
+								EliminacionFull(path, IndiceP)
+							}
+							fmt.Println("Particion eliminada exitosamente.")
+						}
+
+					} else {
+						println("La particion no existe.")
+					}
+
+				} else {
+
+					fmt.Println("El disco especificado no existe.")
+				}
+
+			} else {
+
+				fmt.Println("La ruta debe especificar un archivo con extension '.dsk'.")
+			}
+
+		} else {
+			fmt.Println("Faltan parámetros obligatorios en la función FDISK")
+		}
+
 	} else {
 		fmt.Println("Los parámetros '-delete' y '-add' no pueden venir en la misma instruccion.")
 	}
@@ -92,6 +155,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 				Pindice := IndiceParticion(path)
 				CrearPrimariaOExtendida(Pindice, Start, size, path, fit, name, tipo)
+				fmt.Println("Partición primaria fue creada con éxito.")
 
 			} else {
 
@@ -111,7 +175,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 					Pindice := IndiceParticion(path)
 					CrearPrimariaOExtendida(Pindice, Start, size, path, fit, name, tipo)
-
+					fmt.Println("Partición extendida fue creada con éxito.")
 				} else {
 
 					fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
@@ -124,18 +188,25 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 		} else if strings.ToLower(tipo) == "l" { // Particion logica
 			if ExisteExtendida(path) {
-				fmt.Println("Creando particion logica")
-				//CALCULAR SI HAY ESPACIO DISPONIBLE
+
+				indiceExt := IndiceExtendida(path)
+				HayEspacio, Start := EspacioDisponibleExtendida(size, path, indiceExt)
+				println(HayEspacio)
+				println(Start)
+
+				if HayEspacio {
+					fmt.Println("Creando particion logica")
+				} else {
+					fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
+				}
 			} else {
 				fmt.Println("No se pudo crear la partición lógica porque el disco no tiene partición extendida..")
 			}
-
 		}
 
 	} else {
 		fmt.Println("El disco ha alcanzado el limite de particiones.")
 	}
-
 }
 
 //EspacioDisponible function, en caso de revolver TRUE, el valor entero es el byte de inicio para la nueva particion
@@ -370,7 +441,7 @@ func CrearPrimariaOExtendida(indiceMBR int, start int, size int, path string, fi
 }
 
 //EspacioDisponibleExtendida function, en caso de revolver TRUE, el valor entero es el byte de inicio para la nueva particion
-func EspacioDisponibleExtendida(size int, path string, ebrStart int) (bool, int) {
+func EspacioDisponibleExtendida(size int, path string, extStart int) (bool, int) {
 
 	file, err := os.Open(path)
 	if err != nil { //validar que no sea nulo.
@@ -379,4 +450,161 @@ func EspacioDisponibleExtendida(size int, path string, ebrStart int) (bool, int)
 
 	file.Close()
 	return false, 0
+}
+
+//IndiceExtendida function
+//el valor int que retorna es el byte donde inicia la particion extendida
+func IndiceExtendida(path string) int {
+	file, err := os.Open(path)
+	if err != nil { //validar que no sea nulo.
+		panic(err)
+	}
+
+	Disco1 := estructuras.MBR{}
+	//Obtenemos el tamanio del mbr
+	DiskSize := int(unsafe.Sizeof(Disco1))
+	file.Seek(0, 0)
+	//Lee la cantidad de <size> bytes del archivo
+	DiskData := leerBytes(file, DiskSize)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(DiskData)
+
+	//Decodificamos y guardamos en la variable Disco1
+	err = binary.Read(buffer, binary.BigEndian, &Disco1)
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+	for i := 0; i < 4; i++ {
+		if Disco1.Mpartitions[i].Ptype == 'e' || Disco1.Mpartitions[i].Ptype == 'E' {
+			file.Close()
+			return int(Disco1.Mpartitions[i].Pstart)
+		}
+	}
+
+	file.Close()
+	return 0
+}
+
+//ExisteParticion function
+//verifica si ya existe o no una particion extendida
+//devuelve el indice en el arreglo de particiones del mbr
+func ExisteParticion(path string, name string) (bool, int) {
+	file, err := os.Open(path)
+	if err != nil { //validar que no sea nulo.
+		panic(err)
+	}
+
+	Disco1 := estructuras.MBR{}
+	//Obtenemos el tamanio del mbr
+	DiskSize := int(unsafe.Sizeof(Disco1))
+	file.Seek(0, 0)
+	//Lee la cantidad de <size> bytes del archivo
+	DiskData := leerBytes(file, DiskSize)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(DiskData)
+
+	//Decodificamos y guardamos en la variable Disco1
+	err = binary.Read(buffer, binary.BigEndian, &Disco1)
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+	for i := 0; i < 4; i++ {
+
+		if Disco1.Mpartitions[i].Psize > 0 {
+			var chars [16]byte
+			copy(chars[:], name)
+			if string(Disco1.Mpartitions[i].Pname[:]) == string(chars[:]) {
+				file.Close()
+				return true, i
+			}
+		}
+	}
+
+	file.Close()
+	return false, 0
+}
+
+// EliminacionFast function
+func EliminacionFast(path string, indiceMBR int) {
+
+	file, err := os.OpenFile(path, os.O_RDWR, 0666)
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+	}
+
+	Disco1 := estructuras.MBR{}
+	//Obtenemos el tamanio del mbr
+	DiskSize := int(unsafe.Sizeof(Disco1))
+	file.Seek(0, 0)
+	//Lee la cantidad de <size> bytes del archivo
+	DiskData := leerBytes(file, DiskSize)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(DiskData)
+
+	//Decodificamos y guardamos en la variable Disco1
+	err = binary.Read(buffer, binary.BigEndian, &Disco1)
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+
+	Disco1.Mpartitions[indiceMBR].Psize = 0
+	Disco1.Mpartitions[indiceMBR].Ptype = 0
+	//Re-escribiendo MBR en el archivo binario (disco)
+	file.Seek(0, 0)
+	m1 := &Disco1
+	var binario bytes.Buffer
+	binary.Write(&binario, binary.BigEndian, m1)
+	escribirBytes(file, binario.Bytes())
+
+	file.Close()
+}
+
+// EliminacionFull function
+func EliminacionFull(path string, indiceMBR int) {
+	file, err := os.OpenFile(path, os.O_RDWR, 0666)
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+	}
+
+	Disco1 := estructuras.MBR{}
+	//Obtenemos el tamanio del mbr
+	DiskSize := int(unsafe.Sizeof(Disco1))
+	file.Seek(0, 0)
+	//Lee la cantidad de <size> bytes del archivo
+	DiskData := leerBytes(file, DiskSize)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(DiskData)
+
+	//Decodificamos y guardamos en la variable Disco1
+	err = binary.Read(buffer, binary.BigEndian, &Disco1)
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+	//reescribrimos un arreglo de bytes vacios en el lugar donde iba la particion borrada
+	file.Seek(int64(Disco1.Mpartitions[indiceMBR].Pstart), 0)
+	data := make([]byte, int(Disco1.Mpartitions[indiceMBR].Psize))
+	escribirBytes(file, data)
+	//reseteamos los atributos del struct en el arreglo del MBR
+	Disco1.Mpartitions[indiceMBR].Psize = 0
+	Disco1.Mpartitions[indiceMBR].Ptype = 0
+	Disco1.Mpartitions[indiceMBR].Pfit = 0
+	Disco1.Mpartitions[indiceMBR].Ptype = 0
+	//Re-escribiendo MBR en el archivo binario (disco)
+	file.Seek(0, 0)
+	m1 := &Disco1
+	var binario bytes.Buffer
+	binary.Write(&binario, binary.BigEndian, m1)
+	escribirBytes(file, binario.Bytes())
+
+	file.Close()
 }

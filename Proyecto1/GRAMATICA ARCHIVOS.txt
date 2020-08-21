@@ -1,0 +1,74 @@
+TOKENS:
+
+TK_NUM    //numeros 10 1 8 21 9 55...
+TK_DIR    // cadenas y direcciones sin cadenas /home/
+TK_EXEC   // palabra reservada exec
+TK_PATH   // palabra reservada -path
+TK_PAUSE  // palabra reservada pause
+TK_MKDISK // palabra reservada mkdisk
+TK_SIZE   // palabra reservada -size
+TK_NAME   // palabra reservada -name
+TK_UNIT   // palabra reservada -unit
+TK_RMDISK // palabra reservada rmdisk
+TK_FDISK  // palabra reservada fdisk
+TK_TYPE   // palabra reservada -type
+TK_FIT    // palabra reservada -fit
+TK_DEL    // palabra reservada -delete 
+TK_ADD    // palabra reservada -add
+TK_MNT    // palabra reservada mount
+TK_UMNT   // palabra reservada unmount
+TK_PID    // palabra reservada -id
+TK_ASIG   // flecha de asignacion "->"
+TK_ID     //identificadores de particiones, nombres de archivo
+TK_CMT    // comentario de una linea
+TK_SIGUE	  // continuan parametros "\*"
+TK_BYTES  // palabra reservada b, m o k
+TK_PEL   // palabras reservadas p, e o l
+TK_BFW   // palabras reservadas bf, ff, wf
+TK_FF    // palabras reservadas "fast" y "full"
+TK_FILE  // direccion de un archivo existente
+
+<INICIO>::=  <INSTRUCCION> <OTRA INSTRUCCION>
+	   | TK_COMENTARIO <OTRA INSTRUCCION>
+	   | TK_PAUSE 	   <OTRA INSTRUCCION>
+
+<OTRA_INSTRUCCION>::= <INICIO>
+		      | E
+
+<INSTRUCCION>::= TK_EXEC TK_PATH TK_ASIG TK_FILE
+		|TK_RMDISK TK_PATH TK_ASIG TK_FILE
+		|TK_MKDISK <PARAM_MKDISK> <OTRO_PARAM_MKDISK>
+		|TK_FDISK <PARAM_FDISK> <OTRO_PARAM_FDISK>
+		|TK_MNT <PARAM_MOUNT> <OTRO_PARAM_MOUNT>
+		|TK_UMNT TK_PID TK_NUM TK_ASIG TK_ID <OTRO_ID>
+
+<PARAM_MKDISK>::= TK_SIZE TK_ASIG TK_NUM <OTRO_PARAM_MKDISK>
+		| TK_PATH TK_ASIG TK_DIR <OTRO_PARAM_MKDISK>
+		| TK_NAME TK_ASIG TK_ID  <OTRO_PARAM_MKDISK>
+		| TK_UNIT TK_ASIG TK_BYTES <OTRO_PARAM_MKDISK>
+		
+<OTRO_PARAM_MKDISK>::= <PARAM_MKDISK> <OTRO_PARAM_MKDISK>
+		     | E
+
+
+<PARAM_FDISK>::= TK_SIZE TK_ASIG TK_NUM <OTRO_PARAM_FDISK>
+		|TK_UNIT TK_ASIG TK_BYTES <OTRO_PARAM_FDISK>
+		|TK_PATH TK_ASIG TK_FILE <OTRO_PARAM_FDISK>
+		|TK_TYPE TK_ASIG TK_PEL <OTRO_PARAM_FDISK>
+		|TK_FIT  TK_ASIG TK_BFW <OTRO_PARAM_FDISK>
+		|TK_DEL  TK_ASIG TK_FF  <OTRO_PARAM_FDISK>
+		|TK_NAME TK_ASIG TK_ID  <OTRO_PARAM_FDISK>
+		|TK_ADD  TK_ASIG TK_NUM <OTRO_PARAM_FDISK>
+
+<OTRO_PARAM_FDISK>::= <PARAM_FDISK> <OTRO_PARAM_FDISK>
+		| E
+
+<PARAM_MOUNT>::= TK_PATH TK_ASIG TK_FILE <OTRO_PARAM_MOUNT>
+		|TK_NAME TK_ASIG TK_ID  <OTRO_PARAM_MOUNT>
+		
+<OTRO_PARAM_MOUNT>::= <PARAM_MOUNT> <OTRO_PARAM_MOUNT>
+		    | E
+
+<OTRO_ID>::= TK_PID TK_NUM TK_ASIG TK_ID <OTRO_ID>
+	   | E
+
