@@ -26,24 +26,32 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 			if strings.HasSuffix(strings.ToLower(path), ".dsk") {
 
 				if fileExists(path) {
+					existe, _ := ExisteParticion(path, name)
+					existel, _ := ExisteParticionLogica(path, name)
 
-					if i, _ := strconv.Atoi(size); i > 0 {
+					if !existe && !existel {
 
-						valorSize = i
+						if i, _ := strconv.Atoi(size); i > 0 {
 
-						if strings.ToLower(unit) == "k" || unit == "" {
-							valorBytes = 1024
-						} else if strings.ToLower(unit) == "b" {
-							valorBytes = 1
-						} else if strings.ToLower(unit) == "m" {
-							valorBytes = 1024 * 1024
+							valorSize = i
+
+							if strings.ToLower(unit) == "k" || unit == "" {
+								valorBytes = 1024
+							} else if strings.ToLower(unit) == "b" {
+								valorBytes = 1
+							} else if strings.ToLower(unit) == "m" {
+								valorBytes = 1024 * 1024
+							}
+
+							valorReal := valorSize * valorBytes
+							CrearParticion(valorReal, path, tipo, fit, name)
+
+						} else {
+							fmt.Println("El size debe ser mayor que cero.")
 						}
 
-						valorReal := valorSize * valorBytes
-						CrearParticion(valorReal, path, tipo, fit, name)
-
 					} else {
-						fmt.Println("El size debe ser mayor que cero.")
+						fmt.Println("Ya existe una particion con este nombre.")
 					}
 
 				} else {
@@ -197,7 +205,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 					fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
 				}
 			} else {
-				fmt.Println("No se pudo crear la partición lógica porque el disco no tiene partición extendida..")
+				fmt.Println("No se pudo crear la partición lógica porque el disco no tiene partición extendida.")
 			}
 		}
 
@@ -822,4 +830,69 @@ func EliminacionFull(path string, indiceMBR int) {
 	escribirBytes(file, binario.Bytes())
 
 	file.Close()
+}
+
+//ExisteParticionLogica function
+func ExisteParticionLogica(path string, name string) (bool, int) {
+
+	if ExisteExtendida(path) {
+
+		indiceExt, _ := IndiceExtendida(path)
+
+		file, err := os.OpenFile(path, os.O_RDWR, 0666)
+		if err != nil {
+			fmt.Println(err)
+			file.Close()
+		}
+
+		//EBRaux sera el apuntador al struct EBR temporal
+		EBRaux := estructuras.EBR{}
+		//Obtenemos el tamanio del ebr
+		EBRSize := int(unsafe.Sizeof(EBRaux))
+		file.Seek(int64(indiceExt)+1, 0)
+		//Lee la cantidad de <size> bytes del archivo
+		EBRData := leerBytes(file, EBRSize)
+		//Convierte la data en un buffer,necesario para
+		//decodificar binario
+		buffer := bytes.NewBuffer(EBRData)
+
+		//Decodificamos y guardamos en la variable EBRaux
+		err = binary.Read(buffer, binary.BigEndian, &EBRaux)
+		if err != nil {
+			file.Close()
+			panic(err)
+		}
+
+		Continuar := true
+
+		for Continuar {
+
+			var chars [16]byte
+			copy(chars[:], name)
+			if string(EBRaux.Ename[:]) == string(chars[:]) {
+				file.Close()
+				return true, int(int(EBRaux.Estart) - EBRSize)
+			}
+
+			if EBRaux.Enext != -1 {
+				//Si hay otro EBR a la derecha lo leemos y volvemos al inicio del FOR
+				file.Seek(int64(EBRaux.Enext)+1, 0)
+				EBRData := leerBytes(file, EBRSize)
+				buffer := bytes.NewBuffer(EBRData)
+				err = binary.Read(buffer, binary.BigEndian, &EBRaux)
+				if err != nil {
+					file.Close()
+					panic(err)
+				}
+			} else {
+				//Si no cancelamos, por lo tanto no hay espacio y retornara FALSE
+				Continuar = false
+			}
+
+		}
+		file.Close()
+		return false, 0
+	}
+	return false, 0
+
 }

@@ -28,13 +28,13 @@ func LimpiarPantalla() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	}
-
+	fmt.Println("------------ SISTEMA DE ARCHIVOS LWH ------------")
 }
 
 func main() {
 	continuar := true
 	LimpiarPantalla()
-	fmt.Println("------------ SISTEMA DE ARCHIVOS LWH ------------")
+
 	for continuar {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print(">>")
@@ -69,6 +69,8 @@ func main() {
 			Pausa()
 		} else if strings.ToLower(input) == "exit" {
 			continuar = false
+		} else if strings.ToLower(input) == "clear" {
+			LimpiarPantalla()
 		} else {
 			analizadores.Lexico(input)
 		}
