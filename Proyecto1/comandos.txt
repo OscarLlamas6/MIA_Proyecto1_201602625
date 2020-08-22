@@ -4,8 +4,10 @@ mkdisk -size->6 -path->/home/oscar-pc/Escritorio/PrimerMK/Test/ -name->Disco1.ds
 
 rmdisk -path->/home/oscar-pc/Escritorio/PrimerMK/Test/Disco1.dsk
 
-fdisk -size->1 -path->/home/oscar-pc/Escritorio/PrimerMK/Test/Disco1.dsk -name->Particion6 -type->e -fit->bf
+fdisk -size->1 -path->/home/oscar-pc/Escritorio/PrimerMK/Test/Disco1.dsk -name->Particion1 -type->p -fit->bf
 
 fdisk -size->100 -path->/home/oscar-pc/Escritorio/PrimerMK/Test/Disco1.dsk -name->Particion7 -type->l -unit->b
 
 fdisk -delete->full -name->Particion5 -path->/home/oscar-pc/Escritorio/PrimerMK/Test/Disco1.dsk
+
+mount -path->/home/oscar-pc/Escritorio/PrimerMK/Test/Disco1.dsk -name->Particion1

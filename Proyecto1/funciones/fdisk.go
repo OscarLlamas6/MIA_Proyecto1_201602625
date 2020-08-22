@@ -896,3 +896,44 @@ func ExisteParticionLogica(path string, name string) (bool, int) {
 	return false, 0
 
 }
+
+//EsExtendida function
+func EsExtendida(path string, name string) bool {
+	file, err := os.Open(path)
+	if err != nil { //validar que no sea nulo.
+		panic(err)
+	}
+
+	Disco1 := estructuras.MBR{}
+	//Obtenemos el tamanio del mbr
+	DiskSize := int(unsafe.Sizeof(Disco1))
+	file.Seek(0, 0)
+	//Lee la cantidad de <size> bytes del archivo
+	DiskData := leerBytes(file, DiskSize)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(DiskData)
+
+	//Decodificamos y guardamos en la variable Disco1
+	err = binary.Read(buffer, binary.BigEndian, &Disco1)
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+	for i := 0; i < 4; i++ {
+
+		if Disco1.Mpartitions[i].Psize > 0 {
+			var chars [16]byte
+			copy(chars[:], name)
+			if string(Disco1.Mpartitions[i].Pname[:]) == string(chars[:]) {
+				if Disco1.Mpartitions[i].Ptype == 'e' || Disco1.Mpartitions[i].Ptype == 'E' {
+					file.Close()
+					return true
+				}
+			}
+		}
+	}
+
+	file.Close()
+	return false
+}

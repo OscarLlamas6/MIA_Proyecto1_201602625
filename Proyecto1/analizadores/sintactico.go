@@ -14,6 +14,8 @@ var (
 	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount             bool   = false, false, false, false, false
 	//ListaIDs para desmontar IDs
 	ListaIDs []string
+	//Discos para almacenar discos son particiones montadas
+
 )
 
 func resetearBanderas() {

@@ -28,10 +28,11 @@ func LimpiarPantalla() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	}
-	fmt.Println("------------ SISTEMA DE ARCHIVOS LWH ------------")
+	fmt.Println("------------ SISTEMA DE ARCHIVOS LWH | Dev. By Oscar Llamas ------------")
 }
 
 func main() {
+
 	continuar := true
 	LimpiarPantalla()
 
