@@ -70,9 +70,7 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 
 				if fileExists(path) {
 
-					ExisteP, IndiceP := ExisteParticion(path, name)
-
-					if ExisteP {
+					if ExisteP, IndiceP := ExisteParticion(path, name); ExisteP {
 
 						fmt.Println("¿Está segur@ que desea borrar esta partición?")
 
@@ -106,7 +104,7 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 							}
 							fmt.Println("Particion eliminada exitosamente.")
 						}
-
+						//AQUI VERIFICAMOS SI EXISTE UNA LOGICA
 					} else {
 						println("La particion no existe.")
 					}
@@ -189,13 +187,12 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 		} else if strings.ToLower(tipo) == "l" { // Particion logica
 			if ExisteExtendida(path) {
 
-				indiceExt := IndiceExtendida(path)
-				HayEspacio, Start := EspacioDisponibleExtendida(size, path, indiceExt)
-				println(HayEspacio)
-				println(Start)
+				indiceExt, sizeExt := IndiceExtendida(path)
 
-				if HayEspacio {
-					fmt.Println("Creando particion logica")
+				if HayEspacio := CrearLogica(size, path, indiceExt, sizeExt, fit, name); HayEspacio {
+
+					fmt.Println("Partición lógica creada con exito")
+
 				} else {
 					fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
 				}
@@ -430,7 +427,8 @@ func CrearPrimariaOExtendida(indiceMBR int, start int, size int, path string, fi
 		//CREAR Y ALMACENAR EBR
 		e := estructuras.EBR{}
 		e.Enext = -1
-		file.Seek(int64(start), 0)
+		e.Eprev = -1
+		file.Seek(int64(start)+1, 0)
 		ebr1 := &e
 		var binario1 bytes.Buffer
 		binary.Write(&binario1, binary.BigEndian, ebr1)
@@ -440,21 +438,238 @@ func CrearPrimariaOExtendida(indiceMBR int, start int, size int, path string, fi
 	file.Close()
 }
 
-//EspacioDisponibleExtendida function, en caso de revolver TRUE, el valor entero es el byte de inicio para la nueva particion
-func EspacioDisponibleExtendida(size int, path string, extStart int) (bool, int) {
+//CrearLogica function, en caso de revolver TRUE, el valor entero es el byte de inicio para la nueva particion
+func CrearLogica(size int, path string, extStart int, extSize int, fit string, name string) bool {
 
-	file, err := os.Open(path)
-	if err != nil { //validar que no sea nulo.
+	file, err := os.OpenFile(path, os.O_RDWR, 0666)
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+	}
+
+	//EBRaux sera el apuntador al struct EBR temporal
+	EBRaux := estructuras.EBR{}
+	//Obtenemos el tamanio del ebr
+	EBRSize := int(unsafe.Sizeof(EBRaux))
+	file.Seek(int64(extStart)+1, 0)
+	//Lee la cantidad de <size> bytes del archivo
+	EBRData := leerBytes(file, EBRSize)
+	//Convierte la data en un buffer,necesario para
+	//decodificar binario
+	buffer := bytes.NewBuffer(EBRData)
+
+	//Decodificamos y guardamos en la variable EBRaux
+	err = binary.Read(buffer, binary.BigEndian, &EBRaux)
+	if err != nil {
+		file.Close()
 		panic(err)
 	}
 
+	Continuar := true
+
+	for Continuar {
+
+		if EBRaux.Enext == -1 {
+
+			if EBRaux.Eprev == -1 { //primer EBR de la extendida, solo el primer EBR tendrá ValorPrev = -1
+
+				if EBRaux.Esize == 0 { // esto significa que el primer EBr de la extendida no apunta a ninguna espacio (0 logicas)
+
+					if int(extSize)-EBRSize >= size {
+						EBRaux.Estart = uint32(extStart + EBRSize)
+						EBRaux.Esize = uint32(size)
+						EBRaux.Estatus = 'D'
+
+						var chars [16]byte
+						copy(chars[:], name)
+						copy(EBRaux.Ename[:], chars[:])
+
+						if strings.ToLower(fit) == "wf" || fit == "" {
+							EBRaux.Efit = 'W'
+						} else if strings.ToLower(fit) == "bf" {
+							EBRaux.Efit = 'B'
+						} else if strings.ToLower(fit) == "ff" {
+							EBRaux.Efit = 'F'
+						}
+
+						file.Seek(int64(extStart)+1, 0)
+						ebr1 := &EBRaux
+						var binario1 bytes.Buffer
+						binary.Write(&binario1, binary.BigEndian, ebr1)
+						escribirBytes(file, binario1.Bytes())
+						file.Close()
+						return true
+					}
+
+				} else {
+
+					if int(extSize)-int(EBRSize+int(EBRaux.Esize)) >= (EBRSize + size) {
+						newEBR := estructuras.EBR{}
+						newEBR.Enext = -1
+						newEBR.Eprev = int32(extStart)
+						newEBR.Estart = uint32(extStart + EBRSize + int(EBRaux.Esize) + EBRSize)
+						newEBR.Esize = uint32(size)
+						newEBR.Estatus = 'D'
+
+						var chars [16]byte
+						copy(chars[:], name)
+						copy(newEBR.Ename[:], chars[:])
+
+						if strings.ToLower(fit) == "wf" || fit == "" {
+							newEBR.Efit = 'W'
+						} else if strings.ToLower(fit) == "bf" {
+							newEBR.Efit = 'B'
+						} else if strings.ToLower(fit) == "ff" {
+							newEBR.Efit = 'F'
+						}
+
+						file.Seek(int64(extStart+EBRSize+int(EBRaux.Esize)+1), 0)
+						ebr1 := &newEBR
+						var binario1 bytes.Buffer
+						binary.Write(&binario1, binary.BigEndian, ebr1)
+						escribirBytes(file, binario1.Bytes())
+
+						EBRaux.Enext = int32(extStart + EBRSize + int(EBRaux.Esize))
+						file.Seek(int64(extStart)+1, 0)
+						ebr1 = &EBRaux
+						var binario2 bytes.Buffer
+						binary.Write(&binario2, binary.BigEndian, ebr1)
+						escribirBytes(file, binario2.Bytes())
+						file.Close()
+						return true
+
+					}
+
+				}
+			} else {
+
+				if extSize-int(EBRaux.Estart+EBRaux.Esize) >= (EBRSize + size) {
+					newEBR := estructuras.EBR{}
+					newEBR.Enext = -1
+					newEBR.Eprev = int32(int32(EBRaux.Estart) - int32(EBRSize))
+					newEBR.Estart = uint32(EBRaux.Estart + EBRaux.Esize + uint32(EBRSize))
+					newEBR.Esize = uint32(size)
+					newEBR.Estatus = 'D'
+
+					var chars [16]byte
+					copy(chars[:], name)
+					copy(newEBR.Ename[:], chars[:])
+
+					if strings.ToLower(fit) == "wf" || fit == "" {
+						newEBR.Efit = 'W'
+					} else if strings.ToLower(fit) == "bf" {
+						newEBR.Efit = 'B'
+					} else if strings.ToLower(fit) == "ff" {
+						newEBR.Efit = 'F'
+					}
+
+					file.Seek(int64(EBRaux.Estart+EBRaux.Esize+1), 0)
+					ebr1 := &newEBR
+					var binario1 bytes.Buffer
+					binary.Write(&binario1, binary.BigEndian, ebr1)
+					escribirBytes(file, binario1.Bytes())
+
+					EBRaux.Enext = int32(EBRaux.Estart + EBRaux.Esize)
+					file.Seek(int64(int32(EBRaux.Estart)-int32(EBRSize)+1), 0)
+					ebr1 = &EBRaux
+					var binario2 bytes.Buffer
+					binary.Write(&binario2, binary.BigEndian, ebr1)
+					escribirBytes(file, binario2.Bytes())
+					file.Close()
+					return true
+				}
+
+			}
+
+		} else {
+
+			if EBRaux.Enext-int32(EBRaux.Estart+EBRaux.Esize) >= int32(EBRSize+size) {
+				NextTemporal := EBRaux.Enext
+				//CREANDO EL NUEVO EBR
+				newEBR := estructuras.EBR{}
+				newEBR.Enext = NextTemporal
+				newEBR.Eprev = int32(int32(EBRaux.Estart) - int32(EBRSize))
+				newEBR.Estart = uint32(EBRaux.Estart + EBRaux.Esize + uint32(EBRSize))
+				newEBR.Esize = uint32(size)
+				newEBR.Estatus = 'D'
+
+				var chars [16]byte
+				copy(chars[:], name)
+				copy(newEBR.Ename[:], chars[:])
+
+				if strings.ToLower(fit) == "wf" || fit == "" {
+					newEBR.Efit = 'W'
+				} else if strings.ToLower(fit) == "bf" {
+					newEBR.Efit = 'B'
+				} else if strings.ToLower(fit) == "ff" {
+					newEBR.Efit = 'F'
+				}
+				//GUARDANDO EL NUEVO EBR
+				file.Seek(int64(EBRaux.Estart+EBRaux.Esize+1), 0)
+				ebr1 := &newEBR
+				var binario1 bytes.Buffer
+				binary.Write(&binario1, binary.BigEndian, ebr1)
+				escribirBytes(file, binario1.Bytes())
+				//REESCRIBIENDO EL EBR ACTUAL
+				EBRaux.Enext = int32(EBRaux.Estart + EBRaux.Esize)
+				file.Seek(int64(int32(EBRaux.Estart)-int32(EBRSize)+1), 0)
+				ebr1 = &EBRaux
+				var binario2 bytes.Buffer
+				binary.Write(&binario2, binary.BigEndian, ebr1)
+				escribirBytes(file, binario2.Bytes())
+				//LEYENDO Y REESCRIBIENDO EL EBR SIGUIENTE
+				EBRsig := estructuras.EBR{}
+
+				EBRSize = int(unsafe.Sizeof(EBRsig))
+				file.Seek(int64(NextTemporal)+1, 0)
+				EBRData2 := leerBytes(file, EBRSize)
+				buffer2 := bytes.NewBuffer(EBRData2)
+
+				err = binary.Read(buffer2, binary.BigEndian, &EBRsig)
+				if err != nil {
+					file.Close()
+					panic(err)
+				}
+
+				EBRsig.Eprev = int32(newEBR.Estart - uint32(EBRSize))
+				file.Seek(int64(NextTemporal)+1, 0)
+				ebr1 = &EBRsig
+				var binario3 bytes.Buffer
+				binary.Write(&binario3, binary.BigEndian, ebr1)
+				escribirBytes(file, binario3.Bytes())
+				file.Close()
+				return true
+			}
+
+		}
+
+		if EBRaux.Enext != -1 {
+			//Si hay otro EBR a la derecha lo leemos y volvemos al inicio del FOR
+			file.Seek(int64(EBRaux.Enext)+1, 0)
+			EBRData := leerBytes(file, EBRSize)
+			buffer := bytes.NewBuffer(EBRData)
+			err = binary.Read(buffer, binary.BigEndian, &EBRaux)
+			if err != nil {
+				file.Close()
+				panic(err)
+			}
+		} else {
+			//Si no cancelamos, por lo tanto no hay espacio y retornara FALSE
+			Continuar = false
+		}
+
+	}
+
 	file.Close()
-	return false, 0
+	return false
 }
 
 //IndiceExtendida function
-//el valor int que retorna es el byte donde inicia la particion extendida
-func IndiceExtendida(path string) int {
+//el primer valor int que retorna es el byte donde inicia la particion extendida
+//este metodo solamente se llama cuando se ha verificado que existe una extendida
+//por lo tanto nunca retorna 0
+//el segundo valor int es el size de la extendida
+func IndiceExtendida(path string) (int, int) {
 	file, err := os.Open(path)
 	if err != nil { //validar que no sea nulo.
 		panic(err)
@@ -479,12 +694,12 @@ func IndiceExtendida(path string) int {
 	for i := 0; i < 4; i++ {
 		if Disco1.Mpartitions[i].Ptype == 'e' || Disco1.Mpartitions[i].Ptype == 'E' {
 			file.Close()
-			return int(Disco1.Mpartitions[i].Pstart)
+			return int(Disco1.Mpartitions[i].Pstart), int(Disco1.Mpartitions[i].Psize)
 		}
 	}
 
 	file.Close()
-	return 0
+	return 0, 0
 }
 
 //ExisteParticion function
