@@ -168,6 +168,9 @@ func Lexico(entrada string) {
 					case "-id":
 						newToken := estructuras.NewToken("TK_PID", lexemaact)
 						tokens = append(tokens, newToken)
+					case "-nombre":
+						newToken := estructuras.NewToken("TK_NOMBRE", lexemaact)
+						tokens = append(tokens, newToken)
 					default:
 						errorLex = true
 						lexemaact = ""
@@ -267,10 +270,15 @@ func Lexico(entrada string) {
 					case "fast", "full":
 						newToken := estructuras.NewToken("TK_FF", lexemaact)
 						tokens = append(tokens, newToken)
+					case "mbr", "disk", "sb", "bm_arbdir", "bm_detdir", "bm_inode", "bm_block", "bitacora", "directorio", "tree_file", "tree_directorio", "tree_complete", "ls":
+						newToken := estructuras.NewToken("TK_TIPOREPORTE", lexemaact)
+						tokens = append(tokens, newToken)
+					case "rep":
+						newToken := estructuras.NewToken("TK_REP", lexemaact)
+						tokens = append(tokens, newToken)
 					default:
 						newToken := estructuras.NewToken("TK_ID", lexemaact)
 						tokens = append(tokens, newToken)
-
 					}
 					estado = 0
 					if !anular {

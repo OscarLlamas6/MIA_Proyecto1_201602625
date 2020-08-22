@@ -12,6 +12,8 @@ var (
 	tokenAux                                                    *estructuras.Token
 	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID string = "", "", "", "", "", "", "", "", ""
 	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount             bool   = false, false, false, false, false
+	//ListaIDs para desmontar IDs
+	ListaIDs []string
 )
 
 func resetearBanderas() {
@@ -124,10 +126,16 @@ func inicio() {
 		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_MNT" {
+		ejMount = true
 		paramMount()
+		if ejMount {
+			funciones.EjecutarMount(vPath, vName)
+			resetearBanderas()
+			resetearValores()
+		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_UMNT" {
-
+		ListaIDs = nil
 		tokenAux = nextToken()
 		if tokenCorrecto(tokenAux, "TK_PID") {
 			tokenAux = nextToken()
@@ -136,8 +144,15 @@ func inicio() {
 				if tokenCorrecto(tokenAux, "TK_ASIG") {
 					tokenAux = nextToken()
 					if tokenCorrecto(tokenAux, "TK_ID") {
+						ejUnmount = true
 						//Guardar ID
+						ListaIDs = append(ListaIDs, tokenAux.GetLexema())
 						otroID()
+						if ejUnmount {
+							funciones.EjecutarUnmount(&ListaIDs)
+							resetearBanderas()
+							resetearValores()
+						}
 						otraInstruccion()
 					} else {
 						syntaxError = true
@@ -394,11 +409,14 @@ func paramMount() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_FILE") {
 				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
 				otroParamMount()
 			} else {
+				ejMount = false
 				syntaxError = true
 			}
 		} else {
+			ejMount = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_NAME") {
@@ -407,14 +425,18 @@ func paramMount() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_ID") {
 				//SETEAR NAME
+				vName = tokenAux.GetLexema()
 				otroParamMount()
 			} else {
+				ejMount = false
 				syntaxError = true
 			}
 		} else {
+			ejMount = false
 			syntaxError = true
 		}
 	} else {
+		ejMount = false
 		syntaxError = true
 		fmt.Println("Se esperaba -path o -name.")
 	}
@@ -440,17 +462,22 @@ func otroID() {
 						tokenAux = nextToken()
 						if tokenCorrecto(tokenAux, "TK_ID") {
 							//Guardar ID
+							ListaIDs = append(ListaIDs, tokenAux.GetLexema())
 							otroID()
 						} else {
+							ejUnmount = false
 							syntaxError = true
 						}
 					} else {
+						ejUnmount = false
 						syntaxError = true
 					}
 				} else {
+					ejUnmount = false
 					syntaxError = true
 				}
 			} else {
+				ejUnmount = false
 				syntaxError = true
 			}
 		}
