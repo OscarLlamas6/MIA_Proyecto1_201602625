@@ -112,6 +112,33 @@ func ParticionYaRegistrada(path string, name string) bool {
 	return false
 }
 
+//IDYaRegistrado verifica si un id ya ha sido asignado a una particion ya montada
+func IDYaRegistrado(id string) bool {
+
+	if len(PMList) > 0 {
+		for i := 0; i < len(PMList); i++ {
+			if PMList[i].PMid == id {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+//GetDatosPart devuelve el name, el path y el id
+func GetDatosPart(id string) (string, string) {
+
+	if len(PMList) > 0 {
+		for i := 0; i < len(PMList); i++ {
+			if PMList[i].PMid == id {
+				return PMList[i].PMname, PMList[i].PMpath
+			}
+		}
+	}
+	return "", ""
+
+}
+
 func getABC(i int) string {
 	return abc[i-1 : i]
 }
