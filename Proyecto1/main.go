@@ -2,6 +2,7 @@ package main
 
 import (
 	"Proyecto1/analizadores"
+	"Proyecto1/funciones"
 	"bufio"
 	"fmt"
 	"os"
@@ -72,6 +73,8 @@ func main() {
 			continuar = false
 		} else if strings.ToLower(input) == "clear" {
 			LimpiarPantalla()
+		} else if strings.ToLower(input) == "mount" {
+			funciones.DisplayPMList()
 		} else {
 			analizadores.Lexico(input)
 		}

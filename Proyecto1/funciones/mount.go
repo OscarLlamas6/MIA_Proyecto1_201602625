@@ -110,3 +110,17 @@ func ParticionYaRegistrada(path string, name string) bool {
 func getABC(i int) string {
 	return abc[i-1 : i]
 }
+
+//DisplayPMList funcion
+func DisplayPMList() {
+
+	if len(PMList) > 0 {
+		fmt.Println("------ LISTA DE PARTICIONES MONTADAS ------")
+		for _, pm := range PMList {
+			fmt.Printf("id->%v -path->%v -name->%v\n", pm.PMid, pm.PMpath, pm.PMname)
+		}
+	} else {
+		fmt.Println("No hay ninguna partición montada hasta el momento.")
+	}
+
+}
