@@ -1,12 +1,15 @@
 package funciones
 
 import (
+	"Proyecto1/estructuras"
 	"fmt"
 )
 
 var (
 	//Discos donde se almacenaran los discos que tienen al menos una partición
-	Discos []string
+	Discos []*estructuras.MD
+	//PMList lista de todas las particiones
+	PMList []*estructuras.PM
 )
 
 const abc = "abcdefghijklmnopqrstuvwxyz"
@@ -23,13 +26,46 @@ func EjecutarMount(path string, name string) {
 
 			if !EsExtendida(path, name) {
 
-				if DiscoRegistrado, _ := DiscoYaRegistrado(path); !DiscoRegistrado {
+				if DiscoRegistrado, i := DiscoYaRegistrado(path); DiscoRegistrado {
 
-					fmt.Println("disco registrado")
-					fmt.Println(len(Discos))
+					if ParticionRegistrada := ParticionYaRegistrada(path, name); !ParticionRegistrada {
+						Discos[i].MDcount++
+						id := "vd"
+						id += getABC(i + 1)
+						num := fmt.Sprint(Discos[i].MDcount)
+						id += num
+						Discos[i].Particiones = append(Discos[i].Particiones, id)
+
+						newPM := new(estructuras.PM)
+						newPM.PMid = id
+						newPM.PMname = name
+						newPM.PMpath = path
+						PMList = append(PMList, newPM)
+						fmt.Println(id)
+					} else {
+						fmt.Println("Esta particion ya ha sido montada")
+					}
 
 				} else {
-					fmt.Println("disco no registrado")
+
+					newReg := new(estructuras.MD)
+					newReg.MDcount = 1
+					newReg.MDocupado = 1
+					newReg.MDpath = path
+					Discos = append(Discos, newReg)
+					id := "vd"
+					id += getABC(len(Discos))
+					id += "1"
+
+					Discos[len(Discos)-1].Particiones = append(Discos[len(Discos)-1].Particiones, id)
+
+					fmt.Println(id)
+
+					newPM := new(estructuras.PM)
+					newPM.PMid = id
+					newPM.PMname = name
+					newPM.PMpath = path
+					PMList = append(PMList, newPM)
 				}
 
 			} else {
@@ -47,22 +83,30 @@ func EjecutarMount(path string, name string) {
 
 //DiscoYaRegistrado verifica si ese disco ya tiene alguna otra particion montada, para asignar nueva letra
 func DiscoYaRegistrado(path string) (bool, int) {
-	Discos = append(Discos, "hola")
+
+	if len(Discos) > 0 {
+		for i := 0; i < len(Discos); i++ {
+			if Discos[i].MDpath == path {
+				return true, i
+			}
+		}
+	}
 	return false, 0
 }
 
 //ParticionYaRegistrada verifica si la partición ya ha sido montada con aterioridad
-func ParticionYaRegistrada(indice int, name string) bool {
+func ParticionYaRegistrada(path string, name string) bool {
 
+	if len(PMList) > 0 {
+		for i := 0; i < len(PMList); i++ {
+			if PMList[i].PMpath == path && PMList[i].PMname == name {
+				return true
+			}
+		}
+	}
 	return false
 }
 
 func getABC(i int) string {
 	return abc[i-1 : i]
-}
-
-//IndiceDisponible busca un nuevo espacio en el arreglo para asignar una letra al disco
-func IndiceDisponible() int {
-
-	return -1
 }

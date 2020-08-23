@@ -7,3 +7,9 @@ type MD struct {
 	Particiones []string
 	MDcount     int32
 }
+//PM struct
+type PM struct{
+	PMid string
+	PMname string
+	PMpath string
+}
