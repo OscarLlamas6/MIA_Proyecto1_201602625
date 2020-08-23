@@ -136,6 +136,9 @@ func inicio() {
 			resetearValores()
 		}
 		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_REP" {
+		paramRep()
+		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_UMNT" {
 		ListaIDs = nil
 		tokenAux = nextToken()
@@ -447,7 +450,77 @@ func paramMount() {
 func otroParamMount() {
 	if token < (len(tokens) - 1) {
 		if tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_NAME" {
-			paramMkDisk()
+			paramMount()
+		}
+	}
+}
+
+func paramRep() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_NOMBRE") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_TIPOREPORTE") {
+				//SETEAR TIPOREPORTE
+				otroParamRep()
+			} else {
+				syntaxError = true
+			}
+		} else {
+			syntaxError = true
+		}
+
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") {
+				//SETEAR PATH
+				otroParamRep()
+			} else {
+				syntaxError = true
+			}
+		} else {
+			syntaxError = true
+		}
+
+	} else if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				otroParamRep()
+			} else {
+				syntaxError = true
+			}
+		} else {
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_RUTA") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR RUTA
+				otroParamRep()
+			} else {
+				syntaxError = true
+			}
+		} else {
+			syntaxError = true
+		}
+	} else {
+		syntaxError = true
+		fmt.Println("Se esperaba -nombre, -path, -id, etc.")
+	}
+}
+
+func otroParamRep() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_NOMBRE" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_RUTA" {
+			paramRep()
 		}
 	}
 }

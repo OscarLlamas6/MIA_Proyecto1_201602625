@@ -17,68 +17,73 @@ const abc = "abcdefghijklmnopqrstuvwxyz"
 //EjecutarMount function
 func EjecutarMount(path string, name string) {
 
-	if fileExists(path) {
+	if path != "" && name != "" {
+		if fileExists(path) {
 
-		existe, _ := ExisteParticion(path, name)
-		existel, _ := ExisteParticionLogica(path, name)
+			existe, _ := ExisteParticion(path, name)
+			existel, _ := ExisteParticionLogica(path, name)
 
-		if existe || existel {
+			if existe || existel {
 
-			if !EsExtendida(path, name) {
+				if !EsExtendida(path, name) {
 
-				if DiscoRegistrado, i := DiscoYaRegistrado(path); DiscoRegistrado {
+					if DiscoRegistrado, i := DiscoYaRegistrado(path); DiscoRegistrado {
 
-					if ParticionRegistrada := ParticionYaRegistrada(path, name); !ParticionRegistrada {
-						Discos[i].MDcount++
+						if ParticionRegistrada := ParticionYaRegistrada(path, name); !ParticionRegistrada {
+							Discos[i].MDcount++
+							id := "vd"
+							id += getABC(i + 1)
+							num := fmt.Sprint(Discos[i].MDcount)
+							id += num
+							Discos[i].Particiones = append(Discos[i].Particiones, id)
+
+							newPM := new(estructuras.PM)
+							newPM.PMid = id
+							newPM.PMname = name
+							newPM.PMpath = path
+							PMList = append(PMList, newPM)
+							fmt.Println(id)
+						} else {
+							fmt.Println("Esta particion ya ha sido montada")
+						}
+
+					} else {
+
+						newReg := new(estructuras.MD)
+						newReg.MDcount = 1
+						newReg.MDocupado = 1
+						newReg.MDpath = path
+						Discos = append(Discos, newReg)
 						id := "vd"
-						id += getABC(i + 1)
-						num := fmt.Sprint(Discos[i].MDcount)
-						id += num
-						Discos[i].Particiones = append(Discos[i].Particiones, id)
+						id += getABC(len(Discos))
+						id += "1"
+
+						Discos[len(Discos)-1].Particiones = append(Discos[len(Discos)-1].Particiones, id)
+
+						fmt.Println(id)
 
 						newPM := new(estructuras.PM)
 						newPM.PMid = id
 						newPM.PMname = name
 						newPM.PMpath = path
 						PMList = append(PMList, newPM)
-						fmt.Println(id)
-					} else {
-						fmt.Println("Esta particion ya ha sido montada")
 					}
 
 				} else {
-
-					newReg := new(estructuras.MD)
-					newReg.MDcount = 1
-					newReg.MDocupado = 1
-					newReg.MDpath = path
-					Discos = append(Discos, newReg)
-					id := "vd"
-					id += getABC(len(Discos))
-					id += "1"
-
-					Discos[len(Discos)-1].Particiones = append(Discos[len(Discos)-1].Particiones, id)
-
-					fmt.Println(id)
-
-					newPM := new(estructuras.PM)
-					newPM.PMid = id
-					newPM.PMname = name
-					newPM.PMpath = path
-					PMList = append(PMList, newPM)
+					fmt.Println("No se puede montar porque es una partición extendida.")
 				}
 
 			} else {
-				fmt.Println("No se puede montar porque es una partición extendida.")
+				fmt.Println("El disco especificado no tiene ninguna partición con ese nombre.")
 			}
 
 		} else {
-			fmt.Println("El disco especificado no tiene ninguna partición con ese nombre.")
+			fmt.Println("El disco especificado no existe.")
 		}
-
 	} else {
-		fmt.Println("El disco especificado no existe.")
+		fmt.Println("Faltan parámetros obligatorios en la función MOUNT")
 	}
+
 }
 
 //DiscoYaRegistrado verifica si ese disco ya tiene alguna otra particion montada, para asignar nueva letra
