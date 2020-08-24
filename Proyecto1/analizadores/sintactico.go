@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	syntaxError                                                 bool = false
-	token                                                       int  = -1
-	tokenAux                                                    *estructuras.Token
-	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID string = "", "", "", "", "", "", "", "", ""
-	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount             bool   = false, false, false, false, false
+	syntaxError                                                                 bool = false
+	token                                                                       int  = -1
+	tokenAux                                                                    *estructuras.Token
+	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID, vNombre, vRuta string = "", "", "", "", "", "", "", "", "", "", ""
+	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount, ejReporte                  bool   = false, false, false, false, false, false
 	//ListaIDs para desmontar IDs
 	ListaIDs []string
 	//Discos para almacenar discos son particiones montadas
@@ -24,6 +24,7 @@ func resetearBanderas() {
 	ejRmdisk = false
 	ejMount = false
 	ejUnmount = false
+	ejReporte = false
 }
 
 func resetearValores() {
@@ -36,6 +37,8 @@ func resetearValores() {
 	vDelete = ""
 	vAdd = ""
 	vID = ""
+	vNombre = ""
+	vRuta = ""
 }
 
 //Sintactico fuction
@@ -137,7 +140,13 @@ func inicio() {
 		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_REP" {
+		ejReporte = true
 		paramRep()
+		if ejReporte {
+			funciones.EjecutarReporte(vNombre, vPath, vRuta, vID)
+			resetearBanderas()
+			resetearValores()
+		}
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_UMNT" {
 		ListaIDs = nil
@@ -463,11 +472,14 @@ func paramRep() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_TIPOREPORTE") {
 				//SETEAR TIPOREPORTE
+				vNombre = tokenAux.GetLexema()
 				otroParamRep()
 			} else {
+				ejReporte = false
 				syntaxError = true
 			}
 		} else {
+			ejReporte = false
 			syntaxError = true
 		}
 
@@ -477,11 +489,14 @@ func paramRep() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_FILE") {
 				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
 				otroParamRep()
 			} else {
+				ejReporte = false
 				syntaxError = true
 			}
 		} else {
+			ejReporte = false
 			syntaxError = true
 		}
 
@@ -491,11 +506,14 @@ func paramRep() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_ID") {
 				//SETEAR ID
+				vID = tokenAux.GetLexema()
 				otroParamRep()
 			} else {
+				ejReporte = false
 				syntaxError = true
 			}
 		} else {
+			ejReporte = false
 			syntaxError = true
 		}
 	} else if tokenCorrecto(tokenAux, "TK_RUTA") {
@@ -504,14 +522,18 @@ func paramRep() {
 			tokenAux = nextToken()
 			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") {
 				//SETEAR RUTA
+				vRuta = tokenAux.GetLexema()
 				otroParamRep()
 			} else {
+				ejReporte = false
 				syntaxError = true
 			}
 		} else {
+			ejReporte = false
 			syntaxError = true
 		}
 	} else {
+		ejReporte = false
 		syntaxError = true
 		fmt.Println("Se esperaba -nombre, -path, -id, etc.")
 	}
