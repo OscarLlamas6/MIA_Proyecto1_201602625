@@ -2,7 +2,11 @@ package funciones
 
 import (
 	"Proyecto1/estructuras"
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"os"
+	"unsafe"
 )
 
 var (
@@ -43,6 +47,7 @@ func EjecutarMount(path string, name string) {
 							newPM.PMpath = path
 							PMList = append(PMList, newPM)
 							fmt.Println(id)
+							CambiarStatusM(path, name, existe)
 						} else {
 							fmt.Println("Esta particion ya ha sido montada")
 						}
@@ -67,6 +72,8 @@ func EjecutarMount(path string, name string) {
 						newPM.PMname = name
 						newPM.PMpath = path
 						PMList = append(PMList, newPM)
+
+						CambiarStatusM(path, name, existe)
 					}
 
 				} else {
@@ -154,5 +161,80 @@ func DisplayPMList() {
 	} else {
 		fmt.Println("No hay ninguna partición montada hasta el momento.")
 	}
+
+}
+
+//CambiarStatusM reescribe el atributos Status en el MBR o EBR de la particion
+func CambiarStatusM(path string, name string, existe bool) {
+
+	if existe {
+
+		file, err := os.OpenFile(path, os.O_RDWR, 0666)
+		if err != nil {
+			fmt.Println(err)
+			file.Close()
+		}
+
+		Disco1 := estructuras.MBR{}
+		DiskSize := int(unsafe.Sizeof(Disco1))
+		file.Seek(0, 0)
+		DiskData := leerBytes(file, DiskSize)
+		buffer := bytes.NewBuffer(DiskData)
+		err = binary.Read(buffer, binary.BigEndian, &Disco1)
+		if err != nil {
+			file.Close()
+			panic(err)
+		}
+		for i := 0; i < 4; i++ {
+			var chars [16]byte
+			copy(chars[:], name)
+			if string(Disco1.Mpartitions[i].Pname[:]) == string(chars[:]) {
+				Disco1.Mpartitions[i].Pstatus = 'A'
+			}
+		}
+
+		file.Seek(0, 0)
+		m1 := &Disco1
+		var binario bytes.Buffer
+		binary.Write(&binario, binary.BigEndian, m1)
+		escribirBytes(file, binario.Bytes())
+		file.Close()
+
+	}
+}
+
+//CambiarStatusU reescribe el atributos Status en el MBR o EBR de la particion
+func CambiarStatusU(path string, name string) {
+
+	file, err := os.OpenFile(path, os.O_RDWR, 0666)
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+	}
+
+	Disco1 := estructuras.MBR{}
+	DiskSize := int(unsafe.Sizeof(Disco1))
+	file.Seek(0, 0)
+	DiskData := leerBytes(file, DiskSize)
+	buffer := bytes.NewBuffer(DiskData)
+	err = binary.Read(buffer, binary.BigEndian, &Disco1)
+	if err != nil {
+		file.Close()
+		panic(err)
+	}
+	for i := 0; i < 4; i++ {
+		var chars [16]byte
+		copy(chars[:], name)
+		if string(Disco1.Mpartitions[i].Pname[:]) == string(chars[:]) {
+			Disco1.Mpartitions[i].Pstatus = 'D'
+		}
+	}
+
+	file.Seek(0, 0)
+	m1 := &Disco1
+	var binario bytes.Buffer
+	binary.Write(&binario, binary.BigEndian, m1)
+	escribirBytes(file, binario.Bytes())
+	file.Close()
 
 }

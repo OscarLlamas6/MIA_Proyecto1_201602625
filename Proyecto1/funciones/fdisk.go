@@ -814,7 +814,7 @@ func EliminacionFull(path string, indiceMBR int) {
 		panic(err)
 	}
 	//reescribrimos un arreglo de bytes vacios en el lugar donde iba la particion borrada
-	file.Seek(int64(Disco1.Mpartitions[indiceMBR].Pstart), 0)
+	file.Seek(int64(Disco1.Mpartitions[indiceMBR].Pstart)+1, 0)
 	data := make([]byte, int(Disco1.Mpartitions[indiceMBR].Psize))
 	escribirBytes(file, data)
 	//reseteamos los atributos del struct en el arreglo del MBR

@@ -13,6 +13,8 @@ func EjecutarUnmount(lista *[]string) {
 
 			NameAux, PathAux := GetDatosPart(id)
 
+			CambiarStatusU(PathAux, NameAux)
+
 			for i, pm := range PMList {
 				if pm.PMid == id {
 					PMList = append(PMList[:i], PMList[i+1:]...)
