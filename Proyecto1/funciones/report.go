@@ -57,7 +57,10 @@ func ReporteMBR(path string, ruta string, id string) {
 			return
 		}
 
-		_, err = file.WriteString("digraph H {\n node [ shape=plain] \n table [ label = <\n  <table border='1' cellborder='1'>\n   <tr><td>Nombre</td><td>Valor</td></tr>  ")
+		file.Truncate(0)
+		file.Seek(0, 0)
+
+		_, err = file.WriteString("digraph H {\n node [ shape=plain] \n table [ label = <\n  <table border='1' cellborder='1'>\n   <tr><td>Nombre</td><td>Valor</td></tr>\n")
 		if err != nil {
 			fmt.Println(err)
 			file.Close()
@@ -84,10 +87,26 @@ func ReporteMBR(path string, ruta string, id string) {
 
 		w := bufio.NewWriter(file)
 
-		fmt.Fprintf(w, "<tr><td>MBR_Tamanio</td><td>%v</td></tr> ", Disco1.Msize)
+		fmt.Fprintf(w, "   <tr><td>MBR_Tamanio</td><td>%v</td></tr>\n", Disco1.Msize)
+		fmt.Fprintf(w, "   <tr><td>MBR_Fecha_Creación</td><td>%v</td></tr>\n", string(Disco1.Mdate[:len(Disco1.Mdate)-1]))
+		fmt.Fprintf(w, "   <tr><td>MBR_Disk_Signature</td><td>%v</td></tr>\n", Disco1.Msignature)
+
+		PartNum := 1
+		for i := 0; i < 4; i++ {
+			if Disco1.Mpartitions[i].Psize > 0 {
+				fmt.Fprintf(w, "   <tr><td>Part_%d_Status</td><td>%v</td></tr>\n", PartNum, string(Disco1.Mpartitions[i].Pstatus))
+				fmt.Fprintf(w, "   <tr><td>Part_%d_Type</td><td>%v</td></tr>\n", PartNum, string(Disco1.Mpartitions[i].Ptype))
+				fmt.Fprintf(w, "   <tr><td>Part_%d_Fit</td><td>%v</td></tr>\n", PartNum, string(Disco1.Mpartitions[i].Pfit))
+				fmt.Fprintf(w, "   <tr><td>Part_%d_Start</td><td>%v</td></tr>\n", PartNum, Disco1.Mpartitions[i].Pstart)
+				n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+				fmt.Fprintf(w, "   <tr><td>Part_%d_Name</td><td>%v</td></tr>\n", PartNum, string(Disco1.Mpartitions[i].Pname[:n]))
+				PartNum++
+			}
+		}
+
 		w.Flush()
 		////////////////////
-		_, err = file.WriteString("\n  </table>\n > ]\n}")
+		_, err = file.WriteString("  </table>\n > ]\n}")
 		if err != nil {
 			fmt.Println(err)
 			file.Close()
@@ -96,31 +115,29 @@ func ReporteMBR(path string, ruta string, id string) {
 
 		file.Close()
 
-		comando := "dot -T"
+		extT := "-T"
 
 		switch strings.ToLower(extension) {
 		case ".png":
-			comando += "png "
+			extT += "png"
 		case ".pdf":
-			comando += "pdf "
+			extT += "pdf"
 		case ".jpg":
-			comando += "jpg "
+			extT += "jpg"
 		default:
 
 		}
 
-		comando += "-o "
-		comando += "\"" + path + "\" \"codigo.dot\""
-
-		fmt.Println(comando)
+		//	pathdot := "\"" + path + "\""
+		//sourcedot := "\"" + "codigo.dot" + "\""
 
 		if runtime.GOOS == "windows" {
-			cmd := exec.Command(comando, "/c", "cls") //Windows example, its tested
-			cmd.Stdout = os.Stdout
+			cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Windows example, its tested
+			//cmd.Stdout = os.Stdout
 			cmd.Run()
 		} else {
-			cmd := exec.Command(comando) //Linux example, its tested
-			cmd.Stdout = os.Stdout
+			cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Linux example, its tested
+			//cmd.Stdout = os.Stdout
 			cmd.Run()
 		}
 	} else {
