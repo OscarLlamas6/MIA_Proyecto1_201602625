@@ -113,6 +113,8 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 							fmt.Println("Particion eliminada exitosamente.")
 						}
 						//AQUI VERIFICAMOS SI EXISTE UNA LOGICA
+					} else if ExisteL, _ := ExisteParticionLogica(path, name); ExisteL {
+
 					} else {
 						println("La particion no existe.")
 					}
@@ -885,7 +887,7 @@ func ExisteParticionLogica(path string, name string) (bool, int) {
 					panic(err)
 				}
 			} else {
-				//Si no cancelamos, por lo tanto no hay espacio y retornara FALSE
+				//Si no cancelamos, por lo tanto no existe la particion logica.
 				Continuar = false
 			}
 
