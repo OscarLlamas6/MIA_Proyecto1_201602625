@@ -4,14 +4,16 @@ import (
 	"Proyecto1/estructuras"
 	"Proyecto1/funciones"
 	"fmt"
+
+	"github.com/doun/terminal/color"
 )
 
 var (
-	syntaxError                                                                 bool = false
-	token                                                                       int  = -1
-	tokenAux                                                                    *estructuras.Token
-	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID, vNombre, vRuta string = "", "", "", "", "", "", "", "", "", "", ""
-	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount, ejReporte                  bool   = false, false, false, false, false, false
+	syntaxError                                                                          bool = false
+	token                                                                                int  = -1
+	tokenAux                                                                             *estructuras.Token
+	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID, vNombre, vRuta, vFormat string = "", "", "", "", "", "", "", "", "", "", "", ""
+	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount, ejReporte, ejMkfs                   bool   = false, false, false, false, false, false, false
 	//ListaIDs para desmontar IDs
 	ListaIDs []string
 	//Discos para almacenar discos son particiones montadas
@@ -25,6 +27,7 @@ func resetearBanderas() {
 	ejMount = false
 	ejUnmount = false
 	ejReporte = false
+	ejMkfs = false
 }
 
 func resetearValores() {
@@ -39,6 +42,7 @@ func resetearValores() {
 	vID = ""
 	vNombre = ""
 	vRuta = ""
+	vFormat = ""
 }
 
 //Sintactico fuction
@@ -53,9 +57,9 @@ func Sintactico() {
 	}
 
 	if !syntaxError && token >= (len(tokens)-1) {
-		fmt.Println("Analisis sintáctico exitoso")
+		color.Println("@{!c}	Analisis sintáctico exitoso")
 	} else {
-		fmt.Println("Error sintáctico encontrado")
+		color.Println("@{!r}	Error sintáctico encontrado")
 	}
 
 }
@@ -63,7 +67,7 @@ func Sintactico() {
 func inicio() {
 
 	if tokenAux.GetTipo() == "TK_CMT" {
-		fmt.Println(tokenAux.GetLexema())
+		color.Printf("@{!m}%v\n", tokenAux.GetLexema())
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_PAUSE" {
 		Pausa()
@@ -144,6 +148,15 @@ func inicio() {
 		paramRep()
 		if ejReporte {
 			funciones.EjecutarReporte(vNombre, vPath, vRuta, vID)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_MKFS" {
+		ejMkfs = true
+		paramMkfs()
+		if ejMkfs {
+			funciones.EjecutarMkfs()
 			resetearBanderas()
 			resetearValores()
 		}
@@ -577,6 +590,87 @@ func otroID() {
 				ejUnmount = false
 				syntaxError = true
 			}
+		}
+	}
+}
+
+func paramMkfs() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamMkfs()
+			} else {
+				ejMkfs = false
+				syntaxError = true
+			}
+		} else {
+			ejMkfs = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_TYPE") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FF") {
+				//SETEAR FORMAT MODE
+				vFormat = tokenAux.GetLexema()
+				otroParamMkfs()
+			} else {
+				ejMkfs = false
+				syntaxError = true
+			}
+		} else {
+			ejMkfs = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_ADD") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_NUM") {
+				//SETEAR NUM
+				vAdd = tokenAux.GetLexema()
+				otroParamMkfs()
+			} else {
+				ejMkfs = false
+				syntaxError = true
+			}
+		} else {
+			ejMkfs = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_UNIT") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_BYTES") {
+				//SETEAR BYTES
+				vUnit = tokenAux.GetLexema()
+				otroParamFDisk()
+			} else {
+				ejMkfs = false
+				syntaxError = true
+			}
+		} else {
+			ejMkfs = false
+			syntaxError = true
+		}
+	} else {
+		ejMkfs = false
+		syntaxError = true
+		fmt.Println("Se esperaba -id, -type, etc.")
+	}
+}
+
+func otroParamMkfs() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_TYPE" || tokens[token+1].GetTipo() == "TK_ADD" || tokens[token+1].GetTipo() == "TK_UNIT" {
+			paramMkfs()
 		}
 	}
 }

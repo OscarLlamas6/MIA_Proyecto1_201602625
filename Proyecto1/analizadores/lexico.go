@@ -279,6 +279,9 @@ func Lexico(entrada string) {
 					case "rep":
 						newToken := estructuras.NewToken("TK_REP", lexemaact)
 						tokens = append(tokens, newToken)
+					case "mkfs":
+						newToken := estructuras.NewToken("TK_MKFS", lexemaact)
+						tokens = append(tokens, newToken)
 					default:
 						newToken := estructuras.NewToken("TK_ID", lexemaact)
 						tokens = append(tokens, newToken)

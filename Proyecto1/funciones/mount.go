@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"unsafe"
+
+	"github.com/doun/terminal/color"
 )
 
 var (
@@ -159,7 +161,7 @@ func DisplayPMList() {
 			fmt.Printf("id->%v -path->%v -name->%v\n", pm.PMid, pm.PMpath, pm.PMname)
 		}
 	} else {
-		fmt.Println("No hay ninguna partición montada hasta el momento.")
+		color.Println("@{!r}No hay ninguna partición montada hasta el momento.")
 	}
 
 }

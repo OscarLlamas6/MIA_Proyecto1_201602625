@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/doun/terminal/color"
 )
 
 //Pausa fuc
@@ -29,7 +31,7 @@ func LimpiarPantalla() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	}
-	fmt.Println("------------ SISTEMA DE ARCHIVOS LWH | Dev. By Oscar Llamas ------------")
+	color.Println("@{!g}------------ SISTEMA DE ARCHIVOS LWH | Dev. By Oscar Llamas ------------")
 }
 
 func main() {
@@ -39,7 +41,7 @@ func main() {
 
 	for continuar {
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print(">>")
+		color.Print("@{!y}>>")
 		input, _ := reader.ReadString('\n')
 
 		if runtime.GOOS == "windows" {
