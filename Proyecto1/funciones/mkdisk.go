@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/doun/terminal/color"
 )
 
 //EjecutarMkDisk function
@@ -76,14 +78,13 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 							binary.Write(&binario, binary.BigEndian, m1)
 							escribirBytes(file, binario.Bytes())
 							file.Close()
-
+							color.Printf("@{!m}El disco @{!y}%v @{!m}ha sido creado correctamente.\n", name)
 						} else {
-
-							fmt.Println("Este disco ya existe, intente con otro nombre.")
+							color.Println("@{!r}Este disco ya existe, intente con otro nombre.")
 						}
 
 					} else {
-						fmt.Println("Parámetro 'unit' inválido")
+						color.Println("@{!r}Parámetro 'unit' inválido.")
 					}
 
 				} else {
@@ -92,16 +93,15 @@ func EjecutarMkDisk(size string, path string, name string, unit string) {
 				}
 
 			} else {
-				fmt.Println("El size debe ser mayor que cero.")
-
+				color.Println("@{!r}El size debe ser mayor que cero.")
 			}
 
 		} else {
-			fmt.Println("El nombre debe contener la extension '.dsk'")
+			color.Println("@{!r}El nombre debe contener la extension '.dsk'.")
 		}
 
 	} else {
-		fmt.Println("Faltan parámetros obligatorios en la función MKDISK")
+		color.Println("@{!r}Faltan parámetros obligatorios en la función MKDISK")
 	}
 }
 

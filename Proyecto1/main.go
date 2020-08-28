@@ -4,7 +4,6 @@ import (
 	"Proyecto1/analizadores"
 	"Proyecto1/funciones"
 	"bufio"
-	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
@@ -15,7 +14,7 @@ import (
 
 //Pausa fuc
 func Pausa() {
-	fmt.Print("Ejecución pausada. Presiona 'Enter' para continuar...")
+	color.Print("@{!c}Ejecución pausada. Presiona 'Enter' para continuar...")
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }
 

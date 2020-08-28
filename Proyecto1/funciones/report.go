@@ -23,8 +23,10 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 		} else {
 
 			if IDYaRegistrado(id) { //verificamos que el id si exista, osea que haya una particion montada con ese id
-				if nombre == "mbr" {
+				if strings.ToLower(nombre) == "mbr" {
 					ReporteMBR(path, ruta, id)
+				} else if strings.ToLower(nombre) == "disk" {
+					ReporteDisk(path, ruta, id)
 				}
 			} else {
 				fmt.Printf("No hay ninguna partición montada con el id: %v\n", id)
@@ -143,5 +145,10 @@ func ReporteMBR(path string, ruta string, id string) {
 	} else {
 		fmt.Println("El reporte MBR solo puede generar archivos con extensión .png, .jpg ó .pdf")
 	}
+
+}
+
+//ReporteDisk crea el reporte de las particiones del disco
+func ReporteDisk(path string, ruta string, id string) {
 
 }

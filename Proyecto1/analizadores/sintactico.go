@@ -57,7 +57,7 @@ func Sintactico() {
 	}
 
 	if !syntaxError && token >= (len(tokens)-1) {
-		color.Println("@{!c}	Analisis sintáctico exitoso")
+		//color.Println("@{!c}	Analisis sintáctico exitoso")
 	} else {
 		color.Println("@{!r}	Error sintáctico encontrado")
 	}
@@ -156,7 +156,7 @@ func inicio() {
 		ejMkfs = true
 		paramMkfs()
 		if ejMkfs {
-			funciones.EjecutarMkfs()
+			funciones.EjecutarMkfs(vID, vFormat, vAdd, vUnit)
 			resetearBanderas()
 			resetearValores()
 		}

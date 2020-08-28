@@ -4,8 +4,8 @@ package estructuras
 type AVD struct {
 	FechaCreacion [20]byte
 	NombreDir     [20]byte
-	ApuntadorSubs [6]int64
-	ApuntadorAVD  int64
-	ApuntadorDD   int64
+	ApuntadorSubs [6]int32
+	ApuntadorAVD  int32
+	ApuntadorDD   int32
 	Proper        [20]byte
 }

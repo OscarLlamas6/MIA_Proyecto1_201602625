@@ -48,10 +48,10 @@ func EjecutarMount(path string, name string) {
 							newPM.PMname = name
 							newPM.PMpath = path
 							PMList = append(PMList, newPM)
-							fmt.Println(id)
 							CambiarStatusM(path, name, existe)
+							color.Printf("@{!m}Particion montada correctamente, el id asignado es: @{!y}%v\n", id)
 						} else {
-							fmt.Println("Esta particion ya ha sido montada")
+							color.Println("@{!r}Esta particion ya ha sido montada.")
 						}
 
 					} else {
@@ -67,8 +67,6 @@ func EjecutarMount(path string, name string) {
 
 						Discos[len(Discos)-1].Particiones = append(Discos[len(Discos)-1].Particiones, id)
 
-						fmt.Println(id)
-
 						newPM := new(estructuras.PM)
 						newPM.PMid = id
 						newPM.PMname = name
@@ -76,21 +74,22 @@ func EjecutarMount(path string, name string) {
 						PMList = append(PMList, newPM)
 
 						CambiarStatusM(path, name, existe)
+						color.Printf("@{!m}Particion montada correctamente, el id asignado es: @{!y}%v\n", id)
 					}
 
 				} else {
-					fmt.Println("No se puede montar porque es una partición extendida.")
+					color.Println("@{!r}No se puede montar porque es una partición extendida.")
 				}
 
 			} else {
-				fmt.Println("El disco especificado no tiene ninguna partición con ese nombre.")
+				color.Println("@{!r}El disco especificado no tiene ninguna partición con ese nombre.")
 			}
 
 		} else {
-			fmt.Println("El disco especificado no existe.")
+			color.Println("@{!r}El disco especificado no existe.")
 		}
 	} else {
-		fmt.Println("Faltan parámetros obligatorios en la función MOUNT")
+		color.Println("@{!r}Faltan parámetros obligatorios en la función MOUNT")
 	}
 
 }
@@ -134,7 +133,7 @@ func IDYaRegistrado(id string) bool {
 	return false
 }
 
-//GetDatosPart devuelve el name, el path y el id
+//GetDatosPart devuelve el name y el path
 func GetDatosPart(id string) (string, string) {
 
 	if len(PMList) > 0 {
@@ -239,4 +238,17 @@ func CambiarStatusU(path string, name string) {
 	escribirBytes(file, binario.Bytes())
 	file.Close()
 
+}
+
+//GetID devuelve el id
+func GetID(path string, name string) string {
+
+	if len(PMList) > 0 {
+		for i := 0; i < len(PMList); i++ {
+			if PMList[i].PMpath == path && PMList[i].PMname == name {
+				return PMList[i].PMid
+			}
+		}
+	}
+	return ""
 }

@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"unsafe"
+
+	"github.com/doun/terminal/color"
 )
 
 //EjecutarFDisk function
@@ -47,25 +49,23 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 							CrearParticion(valorReal, path, tipo, fit, name)
 
 						} else {
-							fmt.Println("El size debe ser mayor que cero.")
+							color.Println("@{!r}El size debe ser mayor que cero.")
 						}
 
 					} else {
-						fmt.Println("Ya existe una particion con este nombre.")
+						color.Println("@{!r}Ya existe una particion con este nombre.")
 					}
 
 				} else {
-
-					fmt.Println("El disco especificado no existe.")
+					color.Println("@{!r}El disco especificado no existe.")
 				}
 
 			} else {
-
-				fmt.Println("La ruta debe especificar un archivo con extension '.dsk'.")
+				color.Println("@{!r}La ruta debe especificar un archivo con extension '.dsk'.")
 			}
 
 		} else {
-			fmt.Println("Faltan parámetros obligatorios en la función FDISK")
+			color.Println("@{!r}Faltan parámetros obligatorios en la función FDISK")
 		}
 
 	} else if delete == "" && add != "" { // Fdisk para agregar o quitar espacio de una particion
@@ -80,7 +80,7 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 
 					if ExisteP, IndiceP := ExisteParticion(path, name); ExisteP {
 
-						fmt.Println("¿Está segur@ que desea borrar esta partición?")
+						color.Println("@{!yM}¿Está segur@ que desea borrar esta partición?")
 
 						pedir := true
 						linea := ""
@@ -104,37 +104,40 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 
 						if strings.ToLower(linea) == "y" {
 
+							if ParticionYaRegistrada(path, name) {
+								idAux := GetID(path, name)
+								Desmontar(path, name, idAux)
+							}
+
 							if strings.ToLower(delete) == "fast" {
 								EliminacionFast(path, IndiceP)
 
 							} else if strings.ToLower(delete) == "full" {
 								EliminacionFull(path, IndiceP)
 							}
-							fmt.Println("Particion eliminada exitosamente.")
+							color.Println("@{!c}Particion eliminada exitosamente.")
 						}
 						//AQUI VERIFICAMOS SI EXISTE UNA LOGICA
 					} else if ExisteL, _ := ExisteParticionLogica(path, name); ExisteL {
 
 					} else {
-						println("La particion no existe.")
+						color.Println("@{!r}La particion no existe.")
 					}
 
 				} else {
-
-					fmt.Println("El disco especificado no existe.")
+					color.Println("@{!r}El disco especificado no existe.")
 				}
 
 			} else {
-
-				fmt.Println("La ruta debe especificar un archivo con extension '.dsk'.")
+				color.Println("@{!r}La ruta debe especificar un archivo con extension '.dsk'.")
 			}
 
 		} else {
-			fmt.Println("Faltan parámetros obligatorios en la función FDISK")
+			color.Println("@{!r}Faltan parámetros obligatorios en la función FDISK")
 		}
 
 	} else {
-		fmt.Println("Los parámetros '-delete' y '-add' no pueden venir en la misma instruccion.")
+		color.Println("@{!r}Los parámetros '-delete' y '-add' no pueden venir en la misma instruccion.")
 	}
 
 }
@@ -164,12 +167,10 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 				Pindice := IndiceParticion(path)
 				CrearPrimariaOExtendida(Pindice, Start, size, path, fit, name, tipo)
-				fmt.Println("Partición primaria fue creada con éxito.")
+				color.Println("@{!c}La partición primaria fue creada con éxito.")
 
 			} else {
-
-				fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
-
+				color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
 			}
 
 		} else if strings.ToLower(tipo) == "e" { // Particion extendida
@@ -184,15 +185,14 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 					Pindice := IndiceParticion(path)
 					CrearPrimariaOExtendida(Pindice, Start, size, path, fit, name, tipo)
-					fmt.Println("Partición extendida fue creada con éxito.")
+					color.Println("@{!c}La partición extendida fue creada con éxito.")
 				} else {
-
-					fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
+					color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
 
 				}
 
 			} else {
-				fmt.Println("El disco ha alcanzado el limite de particiones extendidas.")
+				color.Println("@{!r}El disco ha alcanzado el limite de particiones extendidas.")
 			}
 
 		} else if strings.ToLower(tipo) == "l" { // Particion logica
@@ -201,19 +201,18 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 				indiceExt, sizeExt := IndiceExtendida(path)
 
 				if HayEspacio := CrearLogica(size, path, indiceExt, sizeExt, fit, name); HayEspacio {
-
-					fmt.Println("Partición lógica creada con exito")
+					color.Println("@{!c}La partición lógica fue creada con éxito.")
 
 				} else {
-					fmt.Println("Operación fallida. No hay espacio disponible para nueva particion.")
+					color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
 				}
 			} else {
-				fmt.Println("No se pudo crear la partición lógica porque el disco no tiene partición extendida.")
+				color.Println("@{!r}No se pudo crear la partición lógica porque el disco no tiene partición extendida.")
 			}
 		}
 
 	} else {
-		fmt.Println("El disco ha alcanzado el limite de particiones.")
+		color.Println("@{!r}El disco ha alcanzado el limite de particiones.")
 	}
 }
 
@@ -971,4 +970,39 @@ func EsExtendida(path string, name string) bool {
 
 	file.Close()
 	return false
+}
+
+//GetStartAndSize devuelve el byte donde inicia la particiony su size
+func GetStartAndSize(path string, indice int) (int, int) {
+
+	if indice >= 0 && indice <= 3 {
+
+		file, err := os.Open(path)
+		if err != nil { //validar que no sea nulo.
+			panic(err)
+		}
+
+		Disco1 := estructuras.MBR{}
+		//Obtenemos el tamanio del mbr
+		DiskSize := int(unsafe.Sizeof(Disco1))
+		file.Seek(0, 0)
+		//Lee la cantidad de <size> bytes del archivo
+		DiskData := leerBytes(file, DiskSize)
+		//Convierte la data en un buffer,necesario para
+		//decodificar binario
+		buffer := bytes.NewBuffer(DiskData)
+
+		//Decodificamos y guardamos en la variable Disco1
+		err = binary.Read(buffer, binary.BigEndian, &Disco1)
+		if err != nil {
+			file.Close()
+			panic(err)
+		}
+
+		file.Close()
+		return int(Disco1.Mpartitions[indice].Pstart), int(Disco1.Mpartitions[indice].Psize)
+	}
+
+	return 0, 0
+
 }
