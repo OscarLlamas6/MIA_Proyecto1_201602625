@@ -80,7 +80,7 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 
 					if ExisteP, IndiceP := ExisteParticion(path, name); ExisteP {
 
-						color.Println("@{!yM}¿Está segur@ que desea borrar esta partición?")
+						color.Println("@{!yM}¿Está segur@@ que desea borrar esta partición?")
 
 						pedir := true
 						linea := ""
@@ -211,6 +211,20 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 			}
 		}
 
+	} else if strings.ToLower(tipo) == "l" { // Particion logica
+		if ExisteExtendida(path) {
+
+			indiceExt, sizeExt := IndiceExtendida(path)
+
+			if HayEspacio := CrearLogica(size, path, indiceExt, sizeExt, fit, name); HayEspacio {
+				color.Println("@{!c}La partición lógica fue creada con éxito.")
+
+			} else {
+				color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
+			}
+		} else {
+			color.Println("@{!r}No se pudo crear la partición lógica porque el disco no tiene partición extendida.")
+		}
 	} else {
 		color.Println("@{!r}El disco ha alcanzado el limite de particiones.")
 	}
@@ -459,16 +473,10 @@ func CrearLogica(size int, path string, extStart int, extSize int, fit string, n
 
 	//EBRaux sera el apuntador al struct EBR temporal
 	EBRaux := estructuras.EBR{}
-	//Obtenemos el tamanio del ebr
 	EBRSize := int(unsafe.Sizeof(EBRaux))
 	file.Seek(int64(extStart)+1, 0)
-	//Lee la cantidad de <size> bytes del archivo
 	EBRData := leerBytes(file, EBRSize)
-	//Convierte la data en un buffer,necesario para
-	//decodificar binario
 	buffer := bytes.NewBuffer(EBRData)
-
-	//Decodificamos y guardamos en la variable EBRaux
 	err = binary.Read(buffer, binary.BigEndian, &EBRaux)
 	if err != nil {
 		file.Close()
@@ -485,7 +493,7 @@ func CrearLogica(size int, path string, extStart int, extSize int, fit string, n
 
 				if EBRaux.Esize == 0 { // esto significa que el primer EBr de la extendida no apunta a ninguna espacio (0 logicas)
 
-					if int(extSize)-EBRSize > size {
+					if int(extSize)-EBRSize >= size {
 						EBRaux.Estart = uint32(extStart + EBRSize)
 						EBRaux.Esize = uint32(size)
 						EBRaux.Estatus = 'D'
@@ -513,7 +521,7 @@ func CrearLogica(size int, path string, extStart int, extSize int, fit string, n
 
 				} else {
 
-					if int(extSize)-int(EBRSize+int(EBRaux.Esize)) > (EBRSize + size) {
+					if int(extSize)-int(EBRSize+int(EBRaux.Esize)) >= (EBRSize + size) {
 						newEBR := estructuras.EBR{}
 						newEBR.Enext = -1
 						newEBR.Eprev = int32(extStart)
@@ -553,7 +561,8 @@ func CrearLogica(size int, path string, extStart int, extSize int, fit string, n
 				}
 			} else {
 
-				if extSize-int(EBRaux.Estart+EBRaux.Esize) > (EBRSize + size) {
+				if (extStart+extSize)-int(EBRaux.Estart+EBRaux.Esize) >= (EBRSize + size) {
+
 					newEBR := estructuras.EBR{}
 					newEBR.Enext = -1
 					newEBR.Eprev = int32(int32(EBRaux.Estart) - int32(EBRSize))
@@ -624,7 +633,7 @@ func CrearLogica(size int, path string, extStart int, extSize int, fit string, n
 
 			} else {
 
-				if EBRaux.Enext-int32(EBRaux.Estart+EBRaux.Esize) > int32(EBRSize+size) {
+				if EBRaux.Enext-int32(EBRaux.Estart+EBRaux.Esize) >= int32(EBRSize+size) {
 					NextTemporal := EBRaux.Enext
 					//CREANDO EL NUEVO EBR
 					newEBR := estructuras.EBR{}
@@ -1004,5 +1013,69 @@ func GetStartAndSize(path string, indice int) (int, int) {
 	}
 
 	return 0, 0
+
+}
+
+//CantidadLogicas devuelve la cantidad de particiones lógicas que tiene una extendida
+func CantidadLogicas(path string) int {
+
+	if ExisteExtendida(path) {
+
+		indiceExt, _ := IndiceExtendida(path)
+
+		file, err := os.OpenFile(path, os.O_RDWR, 0666)
+		if err != nil {
+			fmt.Println(err)
+			file.Close()
+		}
+
+		//EBRaux sera el apuntador al struct EBR temporal
+		EBRaux := estructuras.EBR{}
+		//Obtenemos el tamanio del ebr
+		EBRSize := int(unsafe.Sizeof(EBRaux))
+		file.Seek(int64(indiceExt)+1, 0)
+		//Lee la cantidad de <size> bytes del archivo
+		EBRData := leerBytes(file, EBRSize)
+		//Convierte la data en un buffer,necesario para
+		//decodificar binario
+		buffer := bytes.NewBuffer(EBRData)
+
+		//Decodificamos y guardamos en la variable EBRaux
+		err = binary.Read(buffer, binary.BigEndian, &EBRaux)
+		if err != nil {
+			file.Close()
+			panic(err)
+		}
+
+		Cantidad := 0
+
+		Continuar := true
+
+		for Continuar {
+
+			if EBRaux.Esize > 0 {
+				Cantidad++
+			}
+
+			if EBRaux.Enext != -1 {
+				//Si hay otro EBR a la derecha lo leemos y volvemos al inicio del FOR
+				file.Seek(int64(EBRaux.Enext)+1, 0)
+				EBRData := leerBytes(file, EBRSize)
+				buffer := bytes.NewBuffer(EBRData)
+				err = binary.Read(buffer, binary.BigEndian, &EBRaux)
+				if err != nil {
+					file.Close()
+					panic(err)
+				}
+			} else {
+				//Si no cancelamos, por lo tanto no existe la particion logica.
+				Continuar = false
+			}
+
+		}
+		file.Close()
+		return Cantidad
+	}
+	return 0
 
 }
