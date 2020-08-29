@@ -81,6 +81,7 @@ func inicio() {
 				tokenAux = nextToken()
 				if tokenCorrecto(tokenAux, "TK_FILE") {
 					//LEER ARCHIVO
+					color.Println("@{!r}No se puede ejecutar un script llamado desde otro script.")
 					otraInstruccion()
 				} else {
 					syntaxError = true
@@ -462,10 +463,6 @@ func paramMount() {
 			ejMount = false
 			syntaxError = true
 		}
-	} else {
-		ejMount = false
-		syntaxError = true
-		fmt.Println("Se esperaba -path o -name.")
 	}
 }
 

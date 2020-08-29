@@ -2,8 +2,9 @@ package main
 
 import (
 	"Proyecto1/analizadores"
-	"Proyecto1/funciones"
 	"bufio"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
@@ -31,6 +32,29 @@ func LimpiarPantalla() {
 		cmd.Run()
 	}
 	color.Println("@{!g}------------ SISTEMA DE ARCHIVOS LWH | Dev. By Oscar Llamas ------------")
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+
+}
+
+func TrimSuffix(s, suffix string) string {
+	if strings.HasSuffix(s, suffix) {
+		s = s[:len(s)-len(suffix)]
+	}
+	return s
+}
+
+func TrimPreffix(s, prefix string) string {
+	if strings.HasPrefix(s, prefix) {
+		s = s[len(prefix):]
+	}
+	return s
 }
 
 func main() {
@@ -68,14 +92,46 @@ func main() {
 			}
 		}
 
-		if strings.ToLower(input) == "pause" {
+		if strings.HasPrefix(strings.ToLower(input), "exec -path->") {
+
+			path := input[12:]
+
+			path = TrimSuffix(path, "\"")
+			path = TrimPreffix(path, "\"")
+
+			if path != "" {
+
+				if strings.HasSuffix(strings.ToLower(path), ".mia") {
+
+					if fileExists(path) {
+
+						filebuffer, err := ioutil.ReadFile(path)
+						if err != nil {
+							color.Println("@{!r}Error al leer script.")
+							fmt.Println(err)
+
+						}
+
+						analizadores.Lexico(string(filebuffer))
+
+					} else {
+						color.Println("@{!r}El script especificado no existe.")
+					}
+
+				} else {
+					color.Println("@{!r}La ruta debe especificar un archivo con extension '.mia'.")
+				}
+
+			} else {
+				color.Println("@{!r}La ruta no puede ser una cadena vacia.")
+			}
+
+		} else if strings.ToLower(input) == "pause" {
 			Pausa()
 		} else if strings.ToLower(input) == "exit" {
 			continuar = false
 		} else if strings.ToLower(input) == "clear" {
 			LimpiarPantalla()
-		} else if strings.ToLower(input) == "mount" {
-			funciones.DisplayPMList()
 		} else {
 			analizadores.Lexico(input)
 		}

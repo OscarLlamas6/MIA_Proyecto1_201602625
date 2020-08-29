@@ -93,10 +93,11 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.FreeBloques = cantidadBloques
 		sb.FreeBitacoras = cantidadBitacoras
 		t := time.Now()
+		var charsDate [20]byte
 		cadena := t.Format("2006-01-02 15:04:05")
-		copy(chars[:], cadena)
-		copy(sb.DateCreacion[:], chars[:])
-		copy(sb.DateLastMount[:], chars[:])
+		copy(charsDate[:], cadena)
+		copy(sb.DateCreacion[:], charsDate[:])
+		copy(sb.DateLastMount[:], charsDate[:])
 		sb.MontajesCount = 1
 		sb.InicioBitmapAVDS = startPart + sizeSuperbloque
 		sb.InicioAVDS = sb.InicioBitmapAVDS + cantidadAVDS

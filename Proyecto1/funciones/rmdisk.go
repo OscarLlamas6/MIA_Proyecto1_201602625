@@ -6,6 +6,8 @@ import (
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/doun/terminal/color"
 )
 
 //EjecutarRmDisk function
@@ -15,8 +17,7 @@ func EjecutarRmDisk(path string) {
 		if strings.HasSuffix(strings.ToLower(path), ".dsk") {
 
 			if fileExists(path) {
-
-				fmt.Println("¿Está segur@ que desea borrar este disco?")
+				color.Println("@{!yM}¿Está segur@@ que desea borrar este disco?")
 
 				pedir := true
 				linea := ""
@@ -42,23 +43,20 @@ func EjecutarRmDisk(path string) {
 					err := os.Remove(path)
 
 					if err != nil {
-						fmt.Println("Error al borrar disco.")
+						color.Println("@{!r}Error al borrar disco.")
 						fmt.Println(err)
 					}
-					fmt.Println("Disco borrado con éxito.")
+					color.Println("@{!c}Disco borrado con éxito.")
 				}
-
 			} else {
-
-				fmt.Println("El disco especificado no existe.")
+				color.Println("@{!r}El disco especificado no existe.")
 			}
 
 		} else {
-
-			fmt.Println("La ruta debe especificar un archivo con extension '.dsk'.")
+			color.Println("@{!r}La ruta debe especificar un archivo con extension '.dsk'.")
 		}
 
 	} else {
-		fmt.Println("La ruta no puede ser una cadena vacia.")
+		color.Println("@{!r}La ruta no puede ser una cadena vacia.")
 	}
 }

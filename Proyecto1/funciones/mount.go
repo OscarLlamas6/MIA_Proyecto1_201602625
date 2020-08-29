@@ -88,6 +88,8 @@ func EjecutarMount(path string, name string) {
 		} else {
 			color.Println("@{!r}El disco especificado no existe.")
 		}
+	} else if path == "" && name == "" {
+		DisplayPMList()
 	} else {
 		color.Println("@{!r}Faltan parámetros obligatorios en la función MOUNT")
 	}
