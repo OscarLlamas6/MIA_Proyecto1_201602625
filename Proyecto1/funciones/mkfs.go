@@ -164,6 +164,13 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		binary.Write(&binario2, binary.BigEndian, sb2)
 		escribirBytes(file, binario2.Bytes())
 
+		//Creando folder / y users.txt
+		//Bitmap de AVD (la primera posición es la carpeta "/")
+		file.Seek(int64(sb.InicioBitmapAVDS+1), 0)
+		data = make([]byte, 1)
+		binary.LittleEndian.PutUint32(data, 1)
+		file.Write(data)
+
 		file.Close()
 
 		color.Println("@{!c}Sistema de archivos LWH instalado correctamente.")

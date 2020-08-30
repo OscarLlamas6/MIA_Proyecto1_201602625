@@ -174,6 +174,36 @@ func Lexico(entrada string) {
 					case "-ruta":
 						newToken := estructuras.NewToken("TK_RUTA", lexemaact)
 						tokens = append(tokens, newToken)
+					case "-usr":
+						newToken := estructuras.NewToken("TK_USR", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-pwd":
+						newToken := estructuras.NewToken("TK_PWD", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-grp":
+						newToken := estructuras.NewToken("TK_GRP", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-ugo":
+						newToken := estructuras.NewToken("TK_UGO", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-r":
+						newToken := estructuras.NewToken("TK_R", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-p":
+						newToken := estructuras.NewToken("TK_P", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-cont":
+						newToken := estructuras.NewToken("TK_CONT", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-file":
+						newToken := estructuras.NewToken("TK_PFILE", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-rf":
+						newToken := estructuras.NewToken("TK_RF", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-dest":
+						newToken := estructuras.NewToken("TK_DEST", lexemaact)
+						tokens = append(tokens, newToken)
 					default:
 						errorLex = true
 						lexemaact = ""
@@ -276,11 +306,72 @@ func Lexico(entrada string) {
 					case "mbr", "disk", "sb", "bm_arbdir", "bm_detdir", "bm_inode", "bm_block", "bitacora", "directorio", "tree_file", "tree_directorio", "tree_complete", "ls":
 						newToken := estructuras.NewToken("TK_TIPOREPORTE", lexemaact)
 						tokens = append(tokens, newToken)
+					//FASE 2
 					case "rep":
 						newToken := estructuras.NewToken("TK_REP", lexemaact)
 						tokens = append(tokens, newToken)
 					case "mkfs":
 						newToken := estructuras.NewToken("TK_MKFS", lexemaact)
+						tokens = append(tokens, newToken)
+					case "login":
+						newToken := estructuras.NewToken("TK_LOGIN", lexemaact)
+						tokens = append(tokens, newToken)
+					case "logout":
+						newToken := estructuras.NewToken("TK_LOGOUT", lexemaact)
+						tokens = append(tokens, newToken)
+					case "mkgrp":
+						newToken := estructuras.NewToken("TK_MKGRP", lexemaact)
+						tokens = append(tokens, newToken)
+					case "rmgrp":
+						newToken := estructuras.NewToken("TK_RMGRP", lexemaact)
+						tokens = append(tokens, newToken)
+					case "mkusr":
+						newToken := estructuras.NewToken("TK_MKUSR", lexemaact)
+						tokens = append(tokens, newToken)
+					case "rmusr":
+						newToken := estructuras.NewToken("TK_RMUSR", lexemaact)
+						tokens = append(tokens, newToken)
+					case "chmod":
+						newToken := estructuras.NewToken("TK_CHMOD", lexemaact)
+						tokens = append(tokens, newToken)
+					case "mkfile":
+						newToken := estructuras.NewToken("TK_MKFILE", lexemaact)
+						tokens = append(tokens, newToken)
+					case "cat":
+						newToken := estructuras.NewToken("TK_CAT", lexemaact)
+						tokens = append(tokens, newToken)
+					case "rm":
+						newToken := estructuras.NewToken("TK_RM", lexemaact)
+						tokens = append(tokens, newToken)
+					case "edit":
+						newToken := estructuras.NewToken("TK_EDIT", lexemaact)
+						tokens = append(tokens, newToken)
+					case "ren":
+						newToken := estructuras.NewToken("TK_REN", lexemaact)
+						tokens = append(tokens, newToken)
+					case "mkdir":
+						newToken := estructuras.NewToken("TK_MKDIR", lexemaact)
+						tokens = append(tokens, newToken)
+					case "cp":
+						newToken := estructuras.NewToken("TK_CP", lexemaact)
+						tokens = append(tokens, newToken)
+					case "mv":
+						newToken := estructuras.NewToken("TK_MV", lexemaact)
+						tokens = append(tokens, newToken)
+					case "find":
+						newToken := estructuras.NewToken("TK_FIND", lexemaact)
+						tokens = append(tokens, newToken)
+					case "chown":
+						newToken := estructuras.NewToken("TK_CHOWN", lexemaact)
+						tokens = append(tokens, newToken)
+					case "chgrp":
+						newToken := estructuras.NewToken("TK_CHGRP", lexemaact)
+						tokens = append(tokens, newToken)
+					case "loss":
+						newToken := estructuras.NewToken("TK_LOSS", lexemaact)
+						tokens = append(tokens, newToken)
+					case "recovery":
+						newToken := estructuras.NewToken("TK_RECOVERY", lexemaact)
 						tokens = append(tokens, newToken)
 					default:
 						newToken := estructuras.NewToken("TK_ID", lexemaact)

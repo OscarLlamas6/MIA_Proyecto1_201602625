@@ -3,7 +3,6 @@ package analizadores
 import (
 	"Proyecto1/estructuras"
 	"Proyecto1/funciones"
-	"fmt"
 
 	"github.com/doun/terminal/color"
 )
@@ -13,7 +12,9 @@ var (
 	token                                                                                int  = -1
 	tokenAux                                                                             *estructuras.Token
 	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID, vNombre, vRuta, vFormat string = "", "", "", "", "", "", "", "", "", "", "", ""
+	vUser, vPass, vGroup                                                                 string = "", "", ""
 	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount, ejReporte, ejMkfs                   bool   = false, false, false, false, false, false, false
+	ejLogin, ejMkgrp, ejRmgrp                                                            bool   = false, false, false
 	//ListaIDs para desmontar IDs
 	ListaIDs []string
 	//Discos para almacenar discos son particiones montadas
@@ -28,6 +29,9 @@ func resetearBanderas() {
 	ejUnmount = false
 	ejReporte = false
 	ejMkfs = false
+	ejLogin = false
+	ejMkgrp = false
+	ejRmgrp = false
 }
 
 func resetearValores() {
@@ -43,6 +47,9 @@ func resetearValores() {
 	vNombre = ""
 	vRuta = ""
 	vFormat = ""
+	vUser = ""
+	vPass = ""
+	vGroup = ""
 }
 
 //Sintactico fuction
@@ -71,6 +78,9 @@ func inicio() {
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_PAUSE" {
 		Pausa()
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_LOGOUT" {
+		funciones.EjecutarLogout()
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_EXEC" {
 
@@ -153,11 +163,38 @@ func inicio() {
 			resetearValores()
 		}
 		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_LOGIN" {
+		ejLogin = true
+		paramLogin()
+		if ejLogin {
+			funciones.EjecutarLogin(vUser, vPass, vID)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_MKFS" {
 		ejMkfs = true
 		paramMkfs()
 		if ejMkfs {
 			funciones.EjecutarMkfs(vID, vFormat, vAdd, vUnit)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_MKGRP" {
+		ejMkgrp = true
+		paramMkgrp()
+		if ejMkgrp {
+			funciones.EjecutarMkgrp(vGroup, vID)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_RMGRP" {
+		ejRmgrp = true
+		paramRmgrp()
+		if ejRmgrp {
+			funciones.EjecutarRmgrp(vGroup, vID)
 			resetearBanderas()
 			resetearValores()
 		}
@@ -197,7 +234,7 @@ func inicio() {
 
 	} else {
 		syntaxError = true
-		fmt.Println("Se esperaba fdisk, mkdisk, mount, etc.")
+		//color.Println("@{!r}Se esperaba fdisk, mkdisk, mount, etc.")
 	}
 
 }
@@ -272,7 +309,7 @@ func paramMkDisk() {
 	} else {
 		ejMkdisk = false
 		syntaxError = true
-		fmt.Println("Se esperaba -size, -path, -name, etc.")
+		color.Println("@{!r}Se esperaba -size, -path, -name, etc.")
 	}
 }
 
@@ -417,7 +454,7 @@ func paramFDisk() {
 	} else {
 		ejFdisk = false
 		syntaxError = true
-		fmt.Println("Se esperaba -size, -path, -name, etc.")
+		color.Println("@{!r}Se esperaba -size, -path, -name, etc.")
 	}
 }
 
@@ -545,7 +582,7 @@ func paramRep() {
 	} else {
 		ejReporte = false
 		syntaxError = true
-		fmt.Println("Se esperaba -nombre, -path, -id, etc.")
+		color.Println("@{!r}Se esperaba -nombre, -path, -id, etc.")
 	}
 }
 
@@ -553,6 +590,173 @@ func otroParamRep() {
 	if token < (len(tokens) - 1) {
 		if tokens[token+1].GetTipo() == "TK_NOMBRE" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_RUTA" {
 			paramRep()
+		}
+	}
+}
+
+func paramLogin() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_USR") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR USERNAME
+				vUser = tokenAux.GetLexema()
+				otroParamLogin()
+			} else {
+				color.Println("@{!r}El username debe ser un ID (iniciar con letra).")
+				ejLogin = false
+				syntaxError = true
+			}
+		} else {
+			ejLogin = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PWD") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_NUM") || tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR PASS
+				vPass = tokenAux.GetLexema()
+				otroParamLogin()
+			} else {
+				color.Println("@{!r}La password debe ser solo numérica o un ID (iniciar con letra).")
+				ejLogin = false
+				syntaxError = true
+			}
+		} else {
+			ejLogin = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamLogin()
+			} else {
+				ejLogin = false
+				syntaxError = true
+			}
+		} else {
+			ejLogin = false
+			syntaxError = true
+		}
+	} else {
+		ejLogin = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -usr, -pwd o -id")
+	}
+}
+
+func otroParamLogin() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_USR" || tokens[token+1].GetTipo() == "TK_PWD" || tokens[token+1].GetTipo() == "TK_PID" {
+			paramLogin()
+		}
+	}
+}
+
+func paramMkgrp() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamMkgrp()
+			} else {
+				ejMkgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejMkgrp = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_NAME") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vGroup = tokenAux.GetLexema()
+				otroParamMkgrp()
+			} else {
+				color.Println("@{!r}El nombre del grupo debe ser un ID (iniciar con letra).")
+				ejMkgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejMkgrp = false
+			syntaxError = true
+		}
+	} else {
+		ejMkgrp = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -name o -id.")
+	}
+}
+
+func otroParamMkgrp() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_NAME" {
+			paramMkgrp()
+		}
+	}
+}
+
+func paramRmgrp() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamRmgrp()
+			} else {
+				ejRmgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejRmgrp = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_NAME") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vGroup = tokenAux.GetLexema()
+				otroParamRmgrp()
+			} else {
+				color.Println("@{!r}El nombre del grupo debe ser un ID (iniciar con letra).")
+				ejRmgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejRmgrp = false
+			syntaxError = true
+		}
+	} else {
+		ejRmgrp = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -name o -id.")
+	}
+}
+
+func otroParamRmgrp() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_NAME" {
+			paramRmgrp()
 		}
 	}
 }
@@ -660,7 +864,7 @@ func paramMkfs() {
 	} else {
 		ejMkfs = false
 		syntaxError = true
-		fmt.Println("Se esperaba -id, -type, etc.")
+		color.Println("@{!r}Se esperaba -id, -type, etc.")
 	}
 }
 

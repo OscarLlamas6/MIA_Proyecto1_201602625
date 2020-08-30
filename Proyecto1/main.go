@@ -43,6 +43,7 @@ func fileExists(filename string) bool {
 
 }
 
+//TrimSuffix elimina el sufijo "suffix" de la cadena "s" si es que lo contiene
 func TrimSuffix(s, suffix string) string {
 	if strings.HasSuffix(s, suffix) {
 		s = s[:len(s)-len(suffix)]
@@ -50,7 +51,8 @@ func TrimSuffix(s, suffix string) string {
 	return s
 }
 
-func TrimPreffix(s, prefix string) string {
+//TrimPrefix elimina el prefijo "prefix" de la cadena "s" si es que lo contiene
+func TrimPrefix(s, prefix string) string {
 	if strings.HasPrefix(s, prefix) {
 		s = s[len(prefix):]
 	}
@@ -97,7 +99,7 @@ func main() {
 			path := input[12:]
 
 			path = TrimSuffix(path, "\"")
-			path = TrimPreffix(path, "\"")
+			path = TrimPrefix(path, "\"")
 
 			if path != "" {
 
