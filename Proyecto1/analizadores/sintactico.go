@@ -12,10 +12,11 @@ var (
 	token                                                                                int  = -1
 	tokenAux                                                                             *estructuras.Token
 	vSize, vPath, vName, vUnit, vType, vFit, vDelete, vAdd, vID, vNombre, vRuta, vFormat string = "", "", "", "", "", "", "", "", "", "", "", ""
-	vUser, vPass, vGroup, vUgo, vR, vCont, vP, vRf                                       string = "", "", "", "", "", "", "", ""
+	vUser, vPass, vGroup, vUgo, vR, vCont, vP, vRf, vDestino, vIDDestiny                 string = "", "", "", "", "", "", "", "", "", ""
 	ejMkdisk, ejFdisk, ejRmdisk, ejMount, ejUnmount, ejReporte, ejMkfs                   bool   = false, false, false, false, false, false, false
 	ejLogin, ejMkgrp, ejRmgrp, ejMkusr, ejRmusr, ejChmod, ejMkfile                       bool   = false, false, false, false, false, false, false
-	ejCat, ejRm                                                                          bool   = false, false
+	ejCat, ejRm, ejEdit, ejRen, ejMkdir, ejCp, ejMv                                      bool   = false, false, false, false, false, false, false
+	ejFind, ejChown, ejChgrp                                                             bool   = false, false, false
 	//ListaIDs para desmontar IDs
 	ListaIDs []string
 	//ListaFiles para la function CAT
@@ -39,6 +40,14 @@ func resetearBanderas() {
 	ejMkfile = false
 	ejCat = false
 	ejRm = false
+	ejEdit = false
+	ejRen = false
+	ejMkdir = false
+	ejCp = false
+	ejMv = false
+	ejFind = false
+	ejChown = false
+	ejChgrp = false
 }
 
 func resetearValores() {
@@ -62,6 +71,8 @@ func resetearValores() {
 	vCont = ""
 	vP = ""
 	vRf = ""
+	vDestino = ""
+	vIDDestiny = ""
 }
 
 //Sintactico fuction
@@ -104,6 +115,54 @@ func inicio() {
 				if tokenCorrecto(tokenAux, "TK_FILE") {
 					//LEER ARCHIVO
 					color.Println("@{!r}No se puede ejecutar un script llamado desde otro script.")
+					otraInstruccion()
+				} else {
+					syntaxError = true
+				}
+			} else {
+				syntaxError = true
+			}
+		} else {
+			syntaxError = true
+		}
+
+	} else if tokenAux.GetTipo() == "TK_LOSS" {
+
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_PID") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ASIG") {
+				tokenAux = nextToken()
+				if tokenCorrecto(tokenAux, "TK_ID") {
+					//SETEAR ID
+					vID = tokenAux.GetLexema()
+					funciones.EjecutarLoss(vID)
+					resetearBanderas()
+					resetearValores()
+					otraInstruccion()
+				} else {
+					syntaxError = true
+				}
+			} else {
+				syntaxError = true
+			}
+		} else {
+			syntaxError = true
+		}
+
+	} else if tokenAux.GetTipo() == "TK_RECOVERY" {
+
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_PID") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ASIG") {
+				tokenAux = nextToken()
+				if tokenCorrecto(tokenAux, "TK_ID") {
+					//SETEAR ID
+					vID = tokenAux.GetLexema()
+					funciones.EjecutarRecovery(vID)
+					resetearBanderas()
+					resetearValores()
 					otraInstruccion()
 				} else {
 					syntaxError = true
@@ -262,6 +321,78 @@ func inicio() {
 		paramRm()
 		if ejRm {
 			funciones.EjecutarRm(vID, vPath, vRf)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_EDIT" {
+		ejEdit = true
+		paramEdit()
+		if ejEdit {
+			funciones.EjecutarEdit(vID, vPath, vSize, vCont)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_REN" {
+		ejRen = true
+		paramRen()
+		if ejRen {
+			funciones.EjecutarRen(vID, vPath, vName)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_MKDIR" {
+		ejMkdir = true
+		paramMkdir()
+		if ejMkdir {
+			funciones.EjecutarMkdir(vID, vPath, vP)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_CP" {
+		ejCp = true
+		paramCp()
+		if ejCp {
+			funciones.EjecutarCp(vID, vPath, vDestino)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_MV" {
+		ejMv = true
+		paramMv()
+		if ejMv {
+			funciones.EjecutarMv(vID, vIDDestiny, vPath, vDestino)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_FIND" {
+		ejFind = true
+		paramFind()
+		if ejFind {
+			funciones.EjecutarFind(vID, vPath, vNombre)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_CHOWN" {
+		ejChown = true
+		paramChown()
+		if ejChown {
+			funciones.EjecutarChown(vID, vPath, vUser, vR)
+			resetearBanderas()
+			resetearValores()
+		}
+		otraInstruccion()
+	} else if tokenAux.GetTipo() == "TK_CHGRP" {
+		ejChgrp = true
+		paramChgrp()
+		if ejChgrp {
+			funciones.EjecutarChgrp(vUser, vGroup)
 			resetearBanderas()
 			resetearValores()
 		}
@@ -1031,6 +1162,124 @@ func otroParamChmod() {
 	}
 }
 
+func paramChown() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamChown()
+			} else {
+				ejChown = false
+				syntaxError = true
+			}
+		} else {
+			ejChown = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamChown()
+			} else {
+				ejChown = false
+				syntaxError = true
+			}
+		} else {
+			ejChown = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_USR") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamChown()
+			} else {
+				ejChown = false
+				syntaxError = true
+			}
+		} else {
+			ejChown = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_R") {
+		//SETEAR R
+		vR = tokenAux.GetLexema()
+		otroParamChown()
+	} else {
+		ejChown = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -path, -usr ó -r")
+	}
+}
+
+func otroParamChown() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_USR" || tokens[token+1].GetTipo() == "TK_R" {
+			paramChown()
+		}
+	}
+}
+
+func paramChgrp() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_USR") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR USERNAME
+				vUser = tokenAux.GetLexema()
+				otroParamChgrp()
+			} else {
+				ejChgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejChgrp = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_GRP") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR GRUPO
+				vGroup = tokenAux.GetLexema()
+				otroParamChgrp()
+			} else {
+				ejChgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejChgrp = false
+			syntaxError = true
+		}
+	} else {
+		ejChgrp = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -usr ó -grp.")
+	}
+}
+
+func otroParamChgrp() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_USR" || tokens[token+1].GetTipo() == "TK_GRP" {
+			paramChgrp()
+		}
+	}
+}
+
 func paramMkfile() {
 	tokenAux = nextToken()
 	if tokenCorrecto(tokenAux, "TK_PID") {
@@ -1116,6 +1365,152 @@ func otroParamMkfile() {
 	}
 }
 
+func paramEdit() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamEdit()
+			} else {
+				ejEdit = false
+				syntaxError = true
+			}
+		} else {
+			ejEdit = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamEdit()
+			} else {
+				ejEdit = false
+				syntaxError = true
+			}
+		} else {
+			ejEdit = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_SIZE") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_NUM") {
+				//SETEAR SIZE
+				vSize = tokenAux.GetLexema()
+				otroParamEdit()
+			} else {
+				ejEdit = false
+				syntaxError = true
+			}
+		} else {
+			ejEdit = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_CONT") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") {
+				//SETEAR CONTENIDO
+				vCont = tokenAux.GetLexema()
+				otroParamEdit()
+			} else {
+				ejEdit = false
+				syntaxError = true
+			}
+		} else {
+			ejEdit = false
+			syntaxError = true
+		}
+	} else {
+		ejEdit = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -path, -size, etc")
+	}
+}
+
+func otroParamEdit() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_SIZE" || tokens[token+1].GetTipo() == "TK_CONT" {
+			paramEdit()
+		}
+	}
+}
+
+func paramRen() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamRen()
+			} else {
+				ejRen = false
+				syntaxError = true
+			}
+		} else {
+			ejRen = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamRen()
+			} else {
+				ejRen = false
+				syntaxError = true
+			}
+		} else {
+			ejRen = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_NAME") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vName = tokenAux.GetLexema()
+				otroParamRen()
+			} else {
+				ejRen = false
+				syntaxError = true
+			}
+		} else {
+			ejRen = false
+			syntaxError = true
+		}
+	} else {
+		ejRen = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -path ó -name")
+	}
+}
+
+func otroParamRen() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_NAME" {
+			paramRen()
+		}
+	}
+}
+
 func paramRm() {
 	tokenAux = nextToken()
 	if tokenCorrecto(tokenAux, "TK_PID") {
@@ -1165,6 +1560,270 @@ func otroParamRm() {
 	if token < (len(tokens) - 1) {
 		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_RF" {
 			paramRm()
+		}
+	}
+}
+
+func paramCp() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamCp()
+			} else {
+				ejCp = false
+				syntaxError = true
+			}
+		} else {
+			ejCp = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamCp()
+			} else {
+				ejCp = false
+				syntaxError = true
+			}
+		} else {
+			ejCp = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_DEST") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR DESTINO
+				vDestino = tokenAux.GetLexema()
+				otroParamCp()
+			} else {
+				ejCp = false
+				syntaxError = true
+			}
+		} else {
+			ejCp = false
+			syntaxError = true
+		}
+	} else {
+		ejCp = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -path ó -dest")
+	}
+}
+
+func otroParamCp() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_DEST" {
+			paramCp()
+		}
+	}
+}
+
+func paramMv() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamMv()
+			} else {
+				ejMv = false
+				syntaxError = true
+			}
+		} else {
+			ejMv = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_IDDEST") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR IDDESTINY
+				vIDDestiny = tokenAux.GetLexema()
+				otroParamMv()
+			} else {
+				ejMv = false
+				syntaxError = true
+			}
+		} else {
+			ejMv = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamMv()
+			} else {
+				ejMv = false
+				syntaxError = true
+			}
+		} else {
+			ejMv = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_DEST") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR DESTINO
+				vDestino = tokenAux.GetLexema()
+				otroParamMv()
+			} else {
+				ejMv = false
+				syntaxError = true
+			}
+		} else {
+			ejMv = false
+			syntaxError = true
+		}
+	} else {
+		ejMv = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -iddestiny, -path ó -dest")
+	}
+}
+
+func otroParamMv() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_DEST" || tokens[token+1].GetTipo() == "TK_IDDEST" {
+			paramMv()
+		}
+	}
+}
+
+func paramFind() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamFind()
+			} else {
+				ejFind = false
+				syntaxError = true
+			}
+		} else {
+			ejFind = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamFind()
+			} else {
+				ejFind = false
+				syntaxError = true
+			}
+		} else {
+			ejFind = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_NOMBRE") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_DIR") || tokenCorrecto(tokenAux, "TK_ASTERISCO") || tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR NOMBRE
+				vNombre = tokenAux.GetLexema()
+				otroParamFind()
+			} else {
+				ejFind = false
+				syntaxError = true
+			}
+		} else {
+			ejFind = false
+			syntaxError = true
+		}
+	} else {
+		ejFind = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -path ó -nombre")
+	}
+}
+
+func otroParamFind() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_NOMBRE" {
+			paramFind()
+		}
+	}
+}
+
+func paramMkdir() {
+	tokenAux = nextToken()
+	if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamMkdir()
+			} else {
+				ejMkdir = false
+				syntaxError = true
+			}
+		} else {
+			ejMkdir = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_PATH") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_DIR") {
+				//SETEAR PATH
+				vPath = tokenAux.GetLexema()
+				otroParamMkdir()
+			} else {
+				ejMkdir = false
+				syntaxError = true
+			}
+		} else {
+			ejMkdir = false
+			syntaxError = true
+		}
+	} else if tokenCorrecto(tokenAux, "TK_P") {
+		//SETEAR P
+		vP = tokenAux.GetLexema()
+		otroParamMkdir()
+	} else {
+		ejMkdir = false
+		syntaxError = true
+		color.Println("@{!r}Se esperaba -id, -path, ó -p")
+	}
+}
+
+func otroParamMkdir() {
+	if token < (len(tokens) - 1) {
+		if tokens[token+1].GetTipo() == "TK_PID" || tokens[token+1].GetTipo() == "TK_PATH" || tokens[token+1].GetTipo() == "TK_P" {
+			paramMkdir()
 		}
 	}
 }

@@ -48,6 +48,12 @@ func Lexico(entrada string) {
 				} else if c == "+" {
 					estado = 3
 					lexemaact = c
+				} else if c == "*" {
+					lexemaact = c
+					newToken := estructuras.NewToken("TK_ASTERISCO", lexemaact)
+					tokens = append(tokens, newToken)
+					lexemaact = ""
+					estado = 0
 				} else if c == "-" {
 					estado = 4
 					lexemaact = c
@@ -203,6 +209,9 @@ func Lexico(entrada string) {
 						tokens = append(tokens, newToken)
 					case "-dest":
 						newToken := estructuras.NewToken("TK_DEST", lexemaact)
+						tokens = append(tokens, newToken)
+					case "-iddestiny":
+						newToken := estructuras.NewToken("TK_IDDEST", lexemaact)
 						tokens = append(tokens, newToken)
 					default:
 						errorLex = true
