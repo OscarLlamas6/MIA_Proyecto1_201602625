@@ -167,7 +167,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 				Pindice := IndiceParticion(path)
 				CrearPrimariaOExtendida(Pindice, Start, size, path, fit, name, tipo)
-				color.Println("@{!c}La partición primaria fue creada con éxito.")
+				color.Printf("@{!m}La particion primaria @{!y}%v @{!m}fue creada con éxito\n", name)
 
 			} else {
 				color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
@@ -185,7 +185,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 
 					Pindice := IndiceParticion(path)
 					CrearPrimariaOExtendida(Pindice, Start, size, path, fit, name, tipo)
-					color.Println("@{!c}La partición extendida fue creada con éxito.")
+					color.Printf("@{!m}La particion extendida @{!y}%v @{!m}fue creada con éxito\n", name)
 				} else {
 					color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
 
@@ -201,8 +201,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 				indiceExt, sizeExt := IndiceExtendida(path)
 
 				if HayEspacio := CrearLogica(size, path, indiceExt, sizeExt, fit, name); HayEspacio {
-					color.Println("@{!c}La partición lógica fue creada con éxito.")
-
+					color.Printf("@{!g}La particion lógica @{!y}%v @{!g}fue creada con éxito\n", name)
 				} else {
 					color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")
 				}
@@ -217,7 +216,7 @@ func CrearParticion(size int, path string, tipo string, fit string, name string)
 			indiceExt, sizeExt := IndiceExtendida(path)
 
 			if HayEspacio := CrearLogica(size, path, indiceExt, sizeExt, fit, name); HayEspacio {
-				color.Println("@{!c}La partición lógica fue creada con éxito.")
+				color.Printf("@{!g}La particion lógica @{!y}%v @{!g}fue creada con éxito\n", name)
 
 			} else {
 				color.Println("@{!r}Operación fallida. No hay espacio disponible para nueva particion.")

@@ -49,7 +49,7 @@ func EjecutarMount(path string, name string) {
 							newPM.PMpath = path
 							PMList = append(PMList, newPM)
 							CambiarStatusM(path, name, existe)
-							color.Printf("@{!m}Particion montada correctamente, el id asignado es: @{!y}%v\n", id)
+							color.Printf("@{!m}Particion montada correctamente, el id asignado es: @{!y}%v\n\n", id)
 						} else {
 							color.Println("@{!r}Esta particion ya ha sido montada.")
 						}
@@ -74,7 +74,7 @@ func EjecutarMount(path string, name string) {
 						PMList = append(PMList, newPM)
 
 						CambiarStatusM(path, name, existe)
-						color.Printf("@{!m}Particion montada correctamente, el id asignado es: @{!y}%v\n", id)
+						color.Printf("@{!m}Particion montada correctamente, el id asignado es: @{!y}%v\n\n", id)
 					}
 
 				} else {
@@ -158,9 +158,11 @@ func DisplayPMList() {
 
 	if len(PMList) > 0 {
 		fmt.Println("------ LISTA DE PARTICIONES MONTADAS ------")
+		fmt.Println("")
 		for _, pm := range PMList {
 			fmt.Printf("id->%v -path->%v -name->%v\n", pm.PMid, pm.PMpath, pm.PMname)
 		}
+		fmt.Println("")
 	} else {
 		color.Println("@{!r}No hay ninguna partición montada hasta el momento.")
 	}

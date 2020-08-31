@@ -97,7 +97,7 @@ func Sintactico() {
 func inicio() {
 
 	if tokenAux.GetTipo() == "TK_CMT" {
-		color.Printf("@{!m}%v\n", tokenAux.GetLexema())
+		color.Printf("@{!m}%v\n\n", tokenAux.GetLexema())
 		otraInstruccion()
 	} else if tokenAux.GetTipo() == "TK_PAUSE" {
 		Pausa()

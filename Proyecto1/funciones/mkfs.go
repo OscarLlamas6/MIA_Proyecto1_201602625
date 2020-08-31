@@ -87,8 +87,8 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.TotalInodos = cantidadInodos
 		sb.TotalBloques = cantidadBloques
 		sb.TotalBitacoras = cantidadBitacoras
-		sb.FreeAVDS = cantidadAVDS
-		sb.FreeDDS = cantidadDDS
+		sb.FreeAVDS = cantidadAVDS - 1
+		sb.FreeDDS = cantidadDDS - 1
 		sb.FreeInodos = cantidadInodos
 		sb.FreeBloques = cantidadBloques
 		sb.FreeBitacoras = cantidadBitacoras
@@ -113,10 +113,10 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.SizeInodo = sizeInodo
 		sb.SizeBloque = sizeBloque
 		sb.SizeBitacora = sizeBitacora
-		sb.FirstFreeAVD = sb.InicioBitmapAVDS
-		sb.FirstFreeDD = sb.InicioBitMapDDS
-		sb.FirstFreeInodo = sb.InicioBitmapInodos
-		sb.FirstFreeBloque = sb.InicioBitmapBloques
+		sb.FirstFreeAVD = sb.InicioAVDS + sb.SizeAVD //Le sumamos un sizeAVD porque vamos a crear la carpeta "/"
+		sb.FirstFreeDD = sb.InicioDDS + sb.SizeDD    //Le sumamos un sizeDD porque vamos a crear el DD de la carpeta "/"
+		sb.FirstFreeInodo = sb.InicioInodos
+		sb.FirstFreeBloque = sb.InicioBloques
 		sb.MagicNum = 201602625
 
 		file, err := os.OpenFile(path, os.O_RDWR, 0666)
@@ -157,7 +157,7 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		data = make([]byte, cantidadBloques)
 		file.Write(data)
 
-		//Escribir el Back del Superbloque
+		//Escribir el Backup del Superbloque
 		file.Seek(int64((sb.InicioBitacora+(sizeBitacora*cantidadBitacoras))+1), 0)
 		sb2 := &sb
 		var binario2 bytes.Buffer
@@ -166,10 +166,60 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 
 		//Creando folder / y users.txt
 		//Bitmap de AVD (la primera posición es la carpeta "/")
+		//Escribiendo un 1 en la primera posicion del bitmap
 		file.Seek(int64(sb.InicioBitmapAVDS+1), 0)
-		data = make([]byte, 1)
-		binary.LittleEndian.PutUint32(data, 1)
+		data = []byte{0x01}
 		file.Write(data)
+		//Seteando valores de la carpeta root "/
+		//Creamos nueva estructura AVD, la cual será escrita en su posición correspondiente
+		AVDaux := estructuras.AVD{}
+		t = time.Now()
+		cadena = t.Format("2006-01-02 15:04:05")
+		copy(charsDate[:], cadena)
+		//Seteando fecha de creacion
+		copy(AVDaux.FechaCreacion[:], charsDate[:])
+		var ArrayNombre [20]byte
+		nombreDir := "/"
+		copy(ArrayNombre[:], nombreDir)
+		//Seteando nombre del directorio "/"
+		copy(AVDaux.NombreDir[:], ArrayNombre[:])
+		//La primera estructura AVD apuntará al primer Detalle de Directorio
+		//Seteando el apuntador de su DD, en este caso es InicioDDS
+		//al ser el primer DD que se usar
+		AVDaux.ApuntadorDD = sb.InicioDDS
+		nombrePropietario := "root"
+		copy(ArrayNombre[:], nombrePropietario)
+		//Seteando nombre del propietario, en este caso la raiz pertenece al id "root"
+		copy(AVDaux.Proper[:], ArrayNombre[:])
+		//APuntadorAVD y los 6 apuntadores a subdirectorios no se setean en este momento
+		//se hará conforme se vayan creando subdirectorios :)
+
+		//Ahora toca escribir el struct AVD en su posición correspondiente
+		file.Seek(int64(sb.InicioAVDS+1), 0)
+		avdp := &AVDaux
+		var binario3 bytes.Buffer
+		binary.Write(&binario3, binary.BigEndian, avdp)
+		escribirBytes(file, binario3.Bytes())
+
+		//Bitmap de DD (la primera posición es el DD de la carpeta "/")
+		//Escribiendo un 1 en la primera posicion del bitmap
+		file.Seek(int64(sb.InicioBitMapDDS+1), 0)
+		data = []byte{0x01}
+		file.Write(data)
+
+		//Creamos una estructura DD para la carpeta "/"
+		DDaux := estructuras.DD{}
+
+		//No le seteamos nada, porque no se han creado archivos
+		//Solo es el struct vació correspondiente para la carpeta "/"
+		//Se le irán seteando valores conforme se creen archivos en este directorio :)
+
+		//Ahora toca escribir el struct DD en su posición correspondiente
+		file.Seek(int64(sb.InicioDDS+1), 0)
+		ddp := &DDaux
+		var binario4 bytes.Buffer
+		binary.Write(&binario4, binary.BigEndian, ddp)
+		escribirBytes(file, binario4.Bytes())
 
 		file.Close()
 

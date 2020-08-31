@@ -18,7 +18,7 @@ var (
 
 //Pausa fuc
 func Pausa() {
-	fmt.Print("Ejecución pausada. Presiona 'Enter' para continuar...")
+	fmt.Print("Ejecución pausada. Presiona 'Enter' para continuar...\n")
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }
 
