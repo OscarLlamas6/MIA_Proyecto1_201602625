@@ -89,8 +89,8 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.TotalBitacoras = cantidadBitacoras
 		sb.FreeAVDS = cantidadAVDS - 1
 		sb.FreeDDS = cantidadDDS - 1
-		sb.FreeInodos = cantidadInodos
-		sb.FreeBloques = cantidadBloques
+		sb.FreeInodos = cantidadInodos - 1
+		sb.FreeBloques = cantidadBloques - 2
 		sb.FreeBitacoras = cantidadBitacoras
 		t := time.Now()
 		var charsDate [20]byte
@@ -113,10 +113,10 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.SizeInodo = sizeInodo
 		sb.SizeBloque = sizeBloque
 		sb.SizeBitacora = sizeBitacora
-		sb.FirstFreeAVD = sb.InicioAVDS + sb.SizeAVD //Le sumamos un sizeAVD porque vamos a crear la carpeta "/"
-		sb.FirstFreeDD = sb.InicioDDS + sb.SizeDD    //Le sumamos un sizeDD porque vamos a crear el DD de la carpeta "/"
-		sb.FirstFreeInodo = sb.InicioInodos
-		sb.FirstFreeBloque = sb.InicioBloques
+		sb.FirstFreeAVD = sb.InicioAVDS + sb.SizeAVD             //Le sumamos un sizeAVD porque vamos a crear la carpeta "/"
+		sb.FirstFreeDD = sb.InicioDDS + sb.SizeDD                //Le sumamos un sizeDD porque vamos a crear el DD de la carpeta "/"
+		sb.FirstFreeInodo = sb.InicioInodos + sb.SizeInodo       //Le sumamos un sizeInodo porque vamos a crear el inodo del archivo users.txt
+		sb.FirstFreeBloque = sb.InicioBloques + (2 * sizeBloque) //Le sumamos dos sizeBloque porque, vamos a crear un usuario y un grupo default, lo cual abarca 32 caracteres.
 		sb.MagicNum = 201602625
 
 		file, err := os.OpenFile(path, os.O_RDWR, 0666)
@@ -206,13 +206,24 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		file.Seek(int64(sb.InicioBitMapDDS+1), 0)
 		data = []byte{0x01}
 		file.Write(data)
-
+		//A continuación debemos crear el archivo users.txt
 		//Creamos una estructura DD para la carpeta "/"
 		DDaux := estructuras.DD{}
 
-		//No le seteamos nada, porque no se han creado archivos
-		//Solo es el struct vació correspondiente para la carpeta "/"
-		//Se le irán seteando valores conforme se creen archivos en este directorio :)
+		//Seteamos atributos al DD
+		nombreArchivo := "users.txt"
+		copy(ArrayNombre[:], nombreArchivo)
+		//Seteando nombre del archivo, al primer struct del arreglo del DD
+		copy(DDaux.DDFiles[0].Name[:], ArrayNombre[:])
+		//Seteando los atributos FechaCreacio y FechaModificacion del archivo users.txt
+		t = time.Now()
+		cadena = t.Format("2006-01-02 15:04:05")
+		copy(charsDate[:], cadena)
+		copy(DDaux.DDFiles[0].FechaCreacion[:], charsDate[:])
+		copy(DDaux.DDFiles[0].FechaModificacion[:], charsDate[:])
+		//Seteamos el apuntador al inodo, en este caso es sb.InicioInodos
+		//al ser el primer Inodo en usarse
+		DDaux.DDFiles[0].ApuntadorInodo = sb.InicioInodos
 
 		//Ahora toca escribir el struct DD en su posición correspondiente
 		file.Seek(int64(sb.InicioDDS+1), 0)
@@ -220,6 +231,67 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		var binario4 bytes.Buffer
 		binary.Write(&binario4, binary.BigEndian, ddp)
 		escribirBytes(file, binario4.Bytes())
+
+		//Bitmap de inodos (la primera posición es el inodo para el archivo users.txt)
+		//Escribiendo un 1 en la primera posicion del bitmap
+		file.Seek(int64(sb.InicioBitmapInodos+1), 0)
+		data = []byte{0x01}
+		file.Write(data)
+
+		//A continuacion creamos una struct de tipo Inodo
+		InodoAux := estructuras.Inodo{}
+		//Seteamos atributos al DD
+		nombrePropietario = "root"
+		copy(ArrayNombre[:], nombrePropietario)
+		//Seteando nombre del archivo, al primer struct del arreglo del DD
+		copy(InodoAux.Proper[:], ArrayNombre[:])
+		InodoAux.NumeroInodo = 1
+		InodoAux.FileSize = 32
+		InodoAux.NumeroBloques = 2
+		//Como se creará un usuario y un grupo en users.txt
+		//se utilizaran aproximadamente 53 caracteres
+		//cada bloque puede almacenar hasta 25 characeres, por lo tanto
+		//se necesitarán 2 de los 4 bloques del inodo
+		InodoAux.ApuntadoresBloques[0] = sb.InicioBloques              // 1,G,root\n1,U,root,root,20 <- caracteres en primer bloque
+		InodoAux.ApuntadoresBloques[1] = sb.InicioBloques + sizeBloque // 1602625 <- caracteres en segundo bloque
+
+		//Ahora toca escribir el struct Inodo en su posición correspondiente
+		file.Seek(int64(sb.InicioInodos+1), 0)
+		inodop := &InodoAux
+		var binario5 bytes.Buffer
+		binary.Write(&binario5, binary.BigEndian, inodop)
+		escribirBytes(file, binario5.Bytes())
+
+		//Bitmap de inodos (la primeras dos posiciones son para el archivo users.txt)
+		//Escribiendo un 1 en las primeras 2 posiciones del bitmap
+		file.Seek(int64(sb.InicioBitmapBloques+1), 0)
+		data = []byte{0x01}
+		file.Write(data)
+		file.Seek(int64(sb.InicioBitmapBloques+2), 0)
+		file.Write(data)
+
+		//A continuación creamos el primer BloqueDatos
+		BloqueAux := estructuras.BloqueDatos{}
+		contenido := "1,G,root\n1,U,root,root,20"
+		copy(BloqueAux.Data[:], contenido)
+
+		//Ahora toca escribir el struct BloqueDatos en su posición correspondiente
+		file.Seek(int64(sb.InicioBloques+1), 0)
+		bloquep := &BloqueAux
+		var binario6 bytes.Buffer
+		binary.Write(&binario6, binary.BigEndian, bloquep)
+		escribirBytes(file, binario6.Bytes())
+
+		//A continuación creamos el segundo BloqueDatos
+		BloqueAux2 := estructuras.BloqueDatos{}
+		contenido = "1602625"
+		copy(BloqueAux2.Data[:], contenido)
+		//Ahora toca escribir el struct BloqueDatos en su posición correspondiente
+		file.Seek(int64((sb.InicioBloques+sizeBloque)+1), 0)
+		bloque2p := &BloqueAux2
+		var binario7 bytes.Buffer
+		binary.Write(&binario7, binary.BigEndian, bloque2p)
+		escribirBytes(file, binario7.Bytes())
 
 		file.Close()
 

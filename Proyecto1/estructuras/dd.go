@@ -9,7 +9,7 @@ type DD struct {
 //DDFile struct
 type DDFile struct {
 	Name              [20]byte
-	ApuntadorInodo    int32
 	FechaCreacion     [20]byte
 	FechaModificacion [20]byte
+	ApuntadorInodo    int32
 }

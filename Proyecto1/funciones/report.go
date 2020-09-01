@@ -377,3 +377,16 @@ func ReporteDisk(path string, ruta string, id string) {
 		color.Println("@{!r}El reporte DISK solo puede generar archivos con extensión .png, .jpg ó .pdf.")
 	}
 }
+
+//ReporteSB crea el reporte del super bloque
+func ReporteSB(path string, ruta string, id string) {
+
+	extension := filepath.Ext(path)
+
+	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
+
+	} else {
+		color.Println("@{!r}El reporte SB solo puede generar archivos con extensión .png, .jpg ó .pdf.")
+	}
+
+}
