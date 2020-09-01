@@ -874,7 +874,7 @@ func EliminacionFull(path string, indiceMBR int) {
 	file.Close()
 }
 
-//ExisteParticionLogica function
+//ExisteParticionLogica function, devuelve True si la partición lógica existe y el byte donde inicia el EBR
 func ExisteParticionLogica(path string, name string) (bool, int) {
 
 	if ExisteExtendida(path) {
