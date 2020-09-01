@@ -125,6 +125,23 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 			file.Close()
 		}
 
+		//////LEEMOS UN SB PARA OBTENER EL ATRIBUTO Montajes count
+		file.Seek(int64(PartStart+1), 0)
+		SBtemp := estructuras.Superblock{}
+		SBtam := int(unsafe.Sizeof(SBtemp))
+		SBD := leerBytes(file, SBtam)
+		bufferT := bytes.NewBuffer(SBD)
+		err = binary.Read(bufferT, binary.BigEndian, &SBtemp)
+		if err != nil {
+			file.Close()
+			fmt.Println(err)
+			return
+		}
+		//LE SUMAMOS 1 A LA CANTIDAD ANTERIOR
+		sb.MontajesCount += SBtemp.MontajesCount
+		color.Printf("@{!g}La partición lleva @{!y}%v @{!g}formateo(s).\n", int(sb.MontajesCount))
+		////////////////////////////////
+
 		file.Seek(int64(PartStart+1), 0)
 		if strings.ToLower(tipo) == "full" {
 			data := make([]byte, sizePart)

@@ -31,6 +31,12 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteDisk(path, ruta, id)
 				} else if strings.ToLower(nombre) == "bm_arbdir" {
 					ReporteBitmapAVD(path, ruta, id)
+				} else if strings.ToLower(nombre) == "bm_detdir" {
+					ReporteBitmapDD(path, ruta, id)
+				} else if strings.ToLower(nombre) == "bm_inode" {
+					ReporteBitmapInode(path, ruta, id)
+				} else if strings.ToLower(nombre) == "bm_block" {
+					ReporteBitmapBloque(path, ruta, id)
 				}
 			} else {
 				fmt.Printf("No hay ninguna partición montada con el id: %v\n", id)
@@ -479,11 +485,557 @@ func ReporteBitmapAVD(path string, ruta string, id string) {
 
 			fileMBR.Close()
 
-		} else if ExisteL, _ := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
 
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitmapAVDS+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalAVDS))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
 		}
 
 	} else {
 		color.Println("@{!r}El reporte BM_ARBDIR solo puede generar archivos con extensión .txt.")
+	}
+}
+
+//ReporteBitmapDD crea el reporte del Bitmap AVD
+func ReporteBitmapDD(path string, ruta string, id string) {
+	extension := filepath.Ext(path)
+
+	if strings.ToLower(extension) == ".txt" {
+
+		NameAux, PathAux := GetDatosPart(id)
+
+		if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+			//LEER Y RECORRER EL MBR
+			fileMBR, err2 := os.Open(PathAux)
+			if err2 != nil { //validar que no sea nulo.
+				panic(err2)
+			}
+			Disco1 := estructuras.MBR{}
+			DiskSize := int(unsafe.Sizeof(Disco1))
+			DiskData := leerBytes(fileMBR, DiskSize)
+			buffer := bytes.NewBuffer(DiskData)
+			err := binary.Read(buffer, binary.BigEndian, &Disco1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := Disco1.Mpartitions[Indice].Pstart
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitMapDDS+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalDDS))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitMapDDS+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalDDS))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+		}
+
+	} else {
+		color.Println("@{!r}El reporte BM_DETDIR solo puede generar archivos con extensión .txt.")
+	}
+}
+
+//ReporteBitmapInode crea el reporte del Bitmap AVD
+func ReporteBitmapInode(path string, ruta string, id string) {
+	extension := filepath.Ext(path)
+
+	if strings.ToLower(extension) == ".txt" {
+
+		NameAux, PathAux := GetDatosPart(id)
+
+		if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+			//LEER Y RECORRER EL MBR
+			fileMBR, err2 := os.Open(PathAux)
+			if err2 != nil { //validar que no sea nulo.
+				panic(err2)
+			}
+			Disco1 := estructuras.MBR{}
+			DiskSize := int(unsafe.Sizeof(Disco1))
+			DiskData := leerBytes(fileMBR, DiskSize)
+			buffer := bytes.NewBuffer(DiskData)
+			err := binary.Read(buffer, binary.BigEndian, &Disco1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := Disco1.Mpartitions[Indice].Pstart
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitmapInodos+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalInodos))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitmapInodos+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalInodos))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+		}
+
+	} else {
+		color.Println("@{!r}El reporte BM_INODE solo puede generar archivos con extensión .txt.")
+	}
+}
+
+//ReporteBitmapBloque crea el reporte del Bitmap AVD
+func ReporteBitmapBloque(path string, ruta string, id string) {
+	extension := filepath.Ext(path)
+
+	if strings.ToLower(extension) == ".txt" {
+
+		NameAux, PathAux := GetDatosPart(id)
+
+		if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+			//LEER Y RECORRER EL MBR
+			fileMBR, err2 := os.Open(PathAux)
+			if err2 != nil { //validar que no sea nulo.
+				panic(err2)
+			}
+			Disco1 := estructuras.MBR{}
+			DiskSize := int(unsafe.Sizeof(Disco1))
+			DiskData := leerBytes(fileMBR, DiskSize)
+			buffer := bytes.NewBuffer(DiskData)
+			err := binary.Read(buffer, binary.BigEndian, &Disco1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := Disco1.Mpartitions[Indice].Pstart
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitmapBloques+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalBloques))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod(path, 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+				w := bufio.NewWriter(file)
+
+				fileMBR.Seek(int64(SB1.InicioBitmapBloques+1), 0)
+				BitmapData := leerBytes(fileMBR, int(SB1.TotalBloques))
+				contador := 0
+				for _, b := range BitmapData {
+					if b == 1 {
+						fmt.Fprint(w, "1	")
+					} else {
+						fmt.Fprint(w, "0	")
+					}
+					contador++
+					if contador == 20 {
+						fmt.Fprint(w, "\n")
+						contador = 0
+					}
+				}
+
+				w.Flush()
+				file.Close()
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+		}
+
+	} else {
+		color.Println("@{!r}El reporte BM_BLOCK solo puede generar archivos con extensión .txt.")
 	}
 }

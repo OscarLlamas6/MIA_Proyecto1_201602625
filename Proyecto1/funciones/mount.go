@@ -157,10 +157,12 @@ func getABC(i int) string {
 func DisplayPMList() {
 
 	if len(PMList) > 0 {
-		fmt.Println("------ LISTA DE PARTICIONES MONTADAS ------")
+		fmt.Println("")
+		color.Println("@{!g}------ LISTA DE PARTICIONES MONTADAS ------")
 		fmt.Println("")
 		for _, pm := range PMList {
-			fmt.Printf("id->%v -path->%v -name->%v\n", pm.PMid, pm.PMpath, pm.PMname)
+			//fmt.Printf("id->%v -path->%v -name->%v\n", pm.PMid, pm.PMpath, pm.PMname)
+			color.Printf("@{!b}id-> @{!y}%v @{!b}-path-> @{!y}%v @{!b}-name-> @{!y}%v\n", pm.PMid, pm.PMpath, pm.PMname)
 		}
 		fmt.Println("")
 	} else {
