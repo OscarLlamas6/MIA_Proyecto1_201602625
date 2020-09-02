@@ -39,11 +39,11 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteBitmapBloque(path, ruta, id)
 				}
 			} else {
-				fmt.Printf("No hay ninguna partición montada con el id: %v\n", id)
+				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
 			}
 		}
 	} else {
-		fmt.Println("Faltan parámetros obligatorios para la funcion REP")
+		color.Println("@{!r}Faltan parámetros obligatorios para la funcion REP.")
 	}
 
 }

@@ -980,7 +980,7 @@ func EsExtendida(path string, name string) bool {
 	return false
 }
 
-//GetStartAndSize devuelve el byte donde inicia la particiony su size
+//GetStartAndSize devuelve el byte donde inicia la particion y su size
 func GetStartAndSize(path string, indice int) (int, int) {
 
 	if indice >= 0 && indice <= 3 {

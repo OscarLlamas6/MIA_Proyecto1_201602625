@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"unicode"
+
+	"github.com/doun/terminal/color"
 )
 
 var (
@@ -18,7 +20,8 @@ var (
 
 //Pausa fuc
 func Pausa() {
-	fmt.Print("Ejecución pausada. Presiona 'Enter' para continuar...\n")
+	fmt.Println("")
+	color.Print("@{!c}Ejecución pausada. Presiona 'Enter' para continuar...")
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 }
 
