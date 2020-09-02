@@ -87,10 +87,10 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.TotalInodos = cantidadInodos
 		sb.TotalBloques = cantidadBloques
 		sb.TotalBitacoras = cantidadBitacoras
-		sb.FreeAVDS = cantidadAVDS - 1
-		sb.FreeDDS = cantidadDDS - 1
-		sb.FreeInodos = cantidadInodos - 1
-		sb.FreeBloques = cantidadBloques - 2
+		sb.FreeAVDS = cantidadAVDS - int32(1)
+		sb.FreeDDS = cantidadDDS - int32(1)
+		sb.FreeInodos = cantidadInodos - int32(1)
+		sb.FreeBloques = cantidadBloques - int32(2)
 		sb.FreeBitacoras = cantidadBitacoras
 		t := time.Now()
 		var charsDate [20]byte
@@ -113,10 +113,10 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.SizeInodo = sizeInodo
 		sb.SizeBloque = sizeBloque
 		sb.SizeBitacora = sizeBitacora
-		sb.FirstFreeAVD = sb.InicioAVDS + sb.SizeAVD             //Le sumamos un sizeAVD porque vamos a crear la carpeta "/"
-		sb.FirstFreeDD = sb.InicioDDS + sb.SizeDD                //Le sumamos un sizeDD porque vamos a crear el DD de la carpeta "/"
-		sb.FirstFreeInodo = sb.InicioInodos + sb.SizeInodo       //Le sumamos un sizeInodo porque vamos a crear el inodo del archivo users.txt
-		sb.FirstFreeBloque = sb.InicioBloques + (2 * sizeBloque) //Le sumamos dos sizeBloque porque, vamos a crear un usuario y un grupo default, lo cual abarca 32 caracteres.
+		sb.FirstFreeAVD = sb.InicioAVDS + sb.SizeAVD                //Le sumamos un sizeAVD porque vamos a crear la carpeta "/"
+		sb.FirstFreeDD = sb.InicioDDS + sb.SizeDD                   //Le sumamos un sizeDD porque vamos a crear el DD de la carpeta "/"
+		sb.FirstFreeInodo = sb.InicioInodos + sb.SizeInodo          //Le sumamos un sizeInodo porque vamos a crear el inodo del archivo users.txt
+		sb.FirstFreeBloque = sb.InicioBloques + int32(2*sizeBloque) //Le sumamos dos sizeBloque porque, vamos a crear un usuario y un grupo default, lo cual abarca 32 caracteres.
 		sb.MagicNum = 201602625
 
 		file, err := os.OpenFile(path, os.O_RDWR, 0666)

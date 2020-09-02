@@ -37,6 +37,8 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteBitmapInode(path, ruta, id)
 				} else if strings.ToLower(nombre) == "bm_block" {
 					ReporteBitmapBloque(path, ruta, id)
+				} else if strings.ToLower(nombre) == "sb" {
+					ReporteSB(path, ruta, id)
 				}
 			} else {
 				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
@@ -393,6 +395,176 @@ func ReporteSB(path string, ruta string, id string) {
 	extension := filepath.Ext(path)
 
 	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
+
+		NameAux, PathAux := GetDatosPart(id)
+
+		if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+			//LEER Y RECORRER EL MBR
+			fileMBR, err2 := os.Open(PathAux)
+			if err2 != nil { //validar que no sea nulo.
+				panic(err2)
+			}
+			Disco1 := estructuras.MBR{}
+			DiskSize := int(unsafe.Sizeof(Disco1))
+			DiskData := leerBytes(fileMBR, DiskSize)
+			buffer := bytes.NewBuffer(DiskData)
+			err := binary.Read(buffer, binary.BigEndian, &Disco1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := Disco1.Mpartitions[Indice].Pstart
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+			fileMBR.Close()
+
+			if SB1.MontajesCount > 0 {
+
+				file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+				// Change permissions Linux.
+				err = os.Chmod("codigo.dot", 0666)
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Truncate(0)
+				file.Seek(0, 0)
+
+				_, err = file.WriteString("digraph H {\n node [ shape=plain] \n table [ label = <\n  <table border='1' cellborder='1'>\n   <tr><td>Atributo</td><td>Valor</td></tr>\n")
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				w := bufio.NewWriter(file)
+
+				///////////SETEAR DATOS DEL SUPERBLOQUE
+				n := bytes.Index(SB1.Name[:], []byte{0})
+				fmt.Fprintf(w, "   <tr><td>Nombre</td><td>%v</td></tr>\n", string(SB1.Name[:n]))
+				fmt.Fprintf(w, "   <tr><td>Total AVDs</td><td>%v</td></tr>\n", SB1.TotalAVDS)
+				fmt.Fprintf(w, "   <tr><td>Total DDs</td><td>%v</td></tr>\n", SB1.TotalDDS)
+				fmt.Fprintf(w, "   <tr><td>Total Inodos</td><td>%v</td></tr>\n", SB1.TotalInodos)
+				fmt.Fprintf(w, "   <tr><td>Total Bloques</td><td>%v</td></tr>\n", SB1.TotalBloques)
+				fmt.Fprintf(w, "   <tr><td>Total Bitacoras</td><td>%v</td></tr>\n", SB1.TotalBitacoras)
+				fmt.Fprintf(w, "   <tr><td>Free AVDs</td><td>%v</td></tr>\n", SB1.FreeAVDS)
+				fmt.Fprintf(w, "   <tr><td>Free DDs</td><td>%v</td></tr>\n", SB1.FreeDDS)
+				fmt.Fprintf(w, "   <tr><td>Free Inodos</td><td>%v</td></tr>\n", SB1.FreeInodos)
+				fmt.Fprintf(w, "   <tr><td>Free Bloques</td><td>%v</td></tr>\n", SB1.FreeBloques)
+				fmt.Fprintf(w, "   <tr><td>Free Bitacoras</td><td>%v</td></tr>\n", SB1.FreeBitacoras)
+				n = bytes.Index(SB1.DateCreacion[:], []byte{0})
+				fmt.Fprintf(w, "   <tr><td>Fecha creación</td><td>%v</td></tr>\n", string(SB1.DateCreacion[:n]))
+				n = bytes.Index(SB1.DateLastMount[:], []byte{0})
+				fmt.Fprintf(w, "   <tr><td>Fecha creación</td><td>%v</td></tr>\n", string(SB1.DateLastMount[:n]))
+				fmt.Fprintf(w, "   <tr><td>No. Montajes</td><td>%v</td></tr>\n", SB1.MontajesCount)
+				fmt.Fprintf(w, "   <tr><td>Apuntador Bitmap AVDs</td><td>%v</td></tr>\n", SB1.InicioBitmapAVDS)
+				fmt.Fprintf(w, "   <tr><td>Apuntador AVDs</td><td>%v</td></tr>\n", SB1.InicioAVDS)
+				fmt.Fprintf(w, "   <tr><td>Apuntador Bitmap DDs</td><td>%v</td></tr>\n", SB1.InicioBitMapDDS)
+				fmt.Fprintf(w, "   <tr><td>Apuntador DDs</td><td>%v</td></tr>\n", SB1.InicioDDS)
+				fmt.Fprintf(w, "   <tr><td>Apuntador Bitmap Inodos</td><td>%v</td></tr>\n", SB1.InicioBitmapInodos)
+				fmt.Fprintf(w, "   <tr><td>Apuntador inodos</td><td>%v</td></tr>\n", SB1.InicioInodos)
+				fmt.Fprintf(w, "   <tr><td>Apuntador Bitmap bloques</td><td>%v</td></tr>\n", SB1.InicioBitmapBloques)
+				fmt.Fprintf(w, "   <tr><td>Apuntador Bloques</td><td>%v</td></tr>\n", SB1.InicioBloques)
+				fmt.Fprintf(w, "   <tr><td>Apuntador Bitacoras</td><td>%v</td></tr>\n", SB1.InicioBitacora)
+				fmt.Fprintf(w, "   <tr><td>Size struct AVD</td><td>%v</td></tr>\n", SB1.SizeAVD)
+				fmt.Fprintf(w, "   <tr><td>Size struct DD</td><td>%v</td></tr>\n", SB1.SizeDD)
+				fmt.Fprintf(w, "   <tr><td>Size struct Inodo</td><td>%v</td></tr>\n", SB1.SizeInodo)
+				fmt.Fprintf(w, "   <tr><td>Size struct Bloque</td><td>%v</td></tr>\n", SB1.SizeBloque)
+				fmt.Fprintf(w, "   <tr><td>Byte primer AVD libre</td><td>%v</td></tr>\n", SB1.FirstFreeAVD)
+				fmt.Fprintf(w, "   <tr><td>Byte primer DD libre</td><td>%v</td></tr>\n", SB1.FirstFreeDD)
+				fmt.Fprintf(w, "   <tr><td>Byte primer Inodo libre</td><td>%v</td></tr>\n", SB1.FirstFreeInodo)
+				fmt.Fprintf(w, "   <tr><td>Byte primer Bloque libre</td><td>%v</td></tr>\n", SB1.FirstFreeBloque)
+				fmt.Fprintf(w, "   <tr><td>Magic Number :D </td><td>%v</td></tr>\n", SB1.MagicNum)
+				////////////////////
+
+				w.Flush()
+
+				_, err = file.WriteString("  </table>\n > ]\n}")
+				if err != nil {
+					fmt.Println(err)
+					file.Close()
+					return
+				}
+
+				file.Close()
+
+				extT := "-T"
+
+				switch strings.ToLower(extension) {
+				case ".png":
+					extT += "png"
+				case ".pdf":
+					extT += "pdf"
+				case ".jpg":
+					extT += "jpg"
+				default:
+
+				}
+
+				if runtime.GOOS == "windows" {
+					cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Windows example, its tested
+					//cmd.Stdout = os.Stdout
+					cmd.Run()
+				} else {
+					cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Linux example, its tested
+					//cmd.Stdout = os.Stdout
+					cmd.Run()
+				}
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+			fileMBR.Close()
+			if SB1.MontajesCount > 0 {
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+		}
 
 	} else {
 		color.Println("@{!r}El reporte SB solo puede generar archivos con extensión .png, .jpg ó .pdf.")
