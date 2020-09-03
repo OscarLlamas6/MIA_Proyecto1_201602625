@@ -8,6 +8,7 @@ type Inodo struct {
 	NumeroBloques      int32
 	ApuntadoresBloques [4]int32
 	ApuntadorIndirecto int32
+	Permisos           int32
 }
 
 //BloqueDatos struct

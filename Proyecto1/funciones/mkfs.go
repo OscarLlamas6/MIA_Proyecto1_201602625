@@ -25,7 +25,7 @@ func EjecutarMkfs(id string, tipo string, add string, unit string) {
 
 			NameAux, PathAux := GetDatosPart(id)
 
-			if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe { //SIGNIFICA QUE ES PRIMARIA, NO PUEDE SER EXTENDIDA PORQUE CUANDO EN LA FUNCION MOUNT SE VERIFICAR QUE NO SEA EXTENDIDA ANTES DE MONTAR.
+			if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe { //SIGNIFICA QUE ES PRIMARIA PORQUE EN LA FUNCION MOUNT SE VERIFICA QUE NO SEA EXTENDIDA ANTES DE MONTAR.
 
 				PartStart, PartSize := GetStartAndSize(PathAux, Indice)
 
@@ -137,6 +137,11 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 			fmt.Println(err)
 			return
 		}
+
+		if SBtemp.MontajesCount > 0 {
+			copy(sb.DateCreacion[:], SBtemp.DateCreacion[:])
+		}
+
 		//LE SUMAMOS 1 A LA CANTIDAD ANTERIOR
 		sb.MontajesCount += SBtemp.MontajesCount
 		color.Printf("@{!g}La partición lleva @{!y}%v @{!g}formateo(s).\n", int(sb.MontajesCount))
@@ -204,6 +209,7 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Seteando el apuntador de su DD, en este caso es InicioDDS
 		//al ser el primer DD que se usar
 		AVDaux.ApuntadorDD = sb.InicioDDS
+		AVDaux.Permisos = 664
 		nombrePropietario := "root"
 		copy(ArrayNombre[:], nombrePropietario)
 		//Seteando nombre del propietario, en este caso la raiz pertenece al id "root"
@@ -262,6 +268,7 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		copy(ArrayNombre[:], nombrePropietario)
 		//Seteando nombre del archivo, al primer struct del arreglo del DD
 		copy(InodoAux.Proper[:], ArrayNombre[:])
+		InodoAux.Permisos = 664
 		InodoAux.NumeroInodo = 1
 		InodoAux.FileSize = 32
 		InodoAux.NumeroBloques = 2

@@ -157,8 +157,11 @@ func VerificarLogin(name string, password string, id string) bool {
 				if registro[1] == "U" {
 					if registro[3] == name && registro[4] == password {
 						fileMBR.Close()
+						idSesion = name
 						sesionActiva = true
-						sesionRoot = true
+						if name == "root" {
+							sesionRoot = true
+						}
 						return true
 					}
 				}
@@ -267,8 +270,11 @@ func VerificarLogin(name string, password string, id string) bool {
 				if registro[1] == "U" {
 					if registro[3] == name && registro[4] == password {
 						fileMBR.Close()
+						idSesion = name
 						sesionActiva = true
-						sesionRoot = true
+						if name == "root" {
+							sesionRoot = true
+						}
 						return true
 					}
 				}
