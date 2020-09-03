@@ -71,7 +71,7 @@ func EjecutarMkdir(id string, path string, p string) {
 						ApuntadorAVD := SB1.InicioAVDS
 						//Vamos a comparar Padres e Hijos
 						carpetas := strings.Split(path, "/")
-						i := 0
+						i := 1
 						PathCorrecto := true
 						for i < len(carpetas)-1 {
 
@@ -110,6 +110,7 @@ func EjecutarMkdir(id string, path string, p string) {
 										var binario2 bytes.Buffer
 										binary.Write(&binario2, binary.BigEndian, sb2)
 										escribirBytes(fileMBR, binario2.Bytes())
+										color.Printf("@{!m}La carpeta @{!y}%v @{!m}fue creada con éxito\n", carpetas[i])
 
 									} else {
 										PathCorrecto = false
@@ -151,6 +152,8 @@ func EjecutarMkdir(id string, path string, p string) {
 									var binario2 bytes.Buffer
 									binary.Write(&binario2, binary.BigEndian, sb2)
 									escribirBytes(fileMBR, binario2.Bytes())
+
+									color.Printf("@{!m}La carpeta @{!y}%v @{!m}fue creada con éxito\n", carpetas[len(carpetas)-1])
 
 								} else {
 									color.Println("@{!r} Ya no hay espacio en el sistema de archivos para crear directorio. Acción fallida.")
