@@ -272,6 +272,7 @@ func VerificarLogin(name string, password string, id string) bool {
 					if registro[3] == name && registro[4] == password {
 						fileMBR.Close()
 						idSesion = name
+						idGrupo = registro[2]
 						sesionActiva = true
 						if name == "root" {
 							sesionRoot = true

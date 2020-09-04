@@ -239,12 +239,18 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		AVDaux.PermisoG = 7
 		AVDaux.PermisoO = 7
 		nombrePropietario := "root"
-		copy(ArrayNombre[:], nombrePropietario)
+		var ArrayPropietario [20]byte
+		copy(ArrayPropietario[:], nombrePropietario)
 		//Seteando nombre del propietario, en este caso la raiz pertenece al id "root"
-		copy(AVDaux.Proper[:], ArrayNombre[:])
+		copy(AVDaux.Proper[:], ArrayPropietario[:])
 		//APuntadorAVD y los 6 apuntadores a subdirectorios no se setean en este momento
 		//se hará conforme se vayan creando subdirectorios :)
 
+		//Seteando nombre del grupo, en este caso pertenece al grupo root
+		var ArrayGrupo [20]byte
+		nombreGrupo := "root"
+		copy(ArrayGrupo[:], nombreGrupo)
+		copy(AVDaux.Grupo[:], ArrayGrupo[:])
 		//Ahora toca escribir el struct AVD en su posición correspondiente
 		file.Seek(int64(sb.InicioAVDS+1), 0)
 		avdp := &AVDaux
@@ -291,11 +297,15 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 
 		//A continuacion creamos una struct de tipo Inodo
 		InodoAux := estructuras.Inodo{}
-		//Seteamos atributos al DD
+		//Seteamos atributos al Inodo
+		var ArrayPInodo [20]byte
 		nombrePropietario = "root"
-		copy(ArrayNombre[:], nombrePropietario)
-		//Seteando nombre del archivo, al primer struct del arreglo del DD
-		copy(InodoAux.Proper[:], ArrayNombre[:])
+		copy(ArrayPInodo[:], nombrePropietario)
+		copy(InodoAux.Proper[:], ArrayPInodo[:])
+		var ArrayGInodo [20]byte
+		nombreGrupo = "root"
+		copy(ArrayGInodo[:], nombreGrupo)
+		copy(InodoAux.Grupo[:], ArrayGInodo[:])
 		InodoAux.PermisoU = 7
 		InodoAux.PermisoG = 7
 		InodoAux.PermisoO = 0

@@ -66,6 +66,7 @@ func main() {
 
 	for continuar {
 		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("")
 		color.Print("@{!y}>>")
 		input, _ := reader.ReadString('\n')
 
