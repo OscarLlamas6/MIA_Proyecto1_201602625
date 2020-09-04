@@ -8,5 +8,7 @@ type AVD struct {
 	ApuntadorSubs [6]int32
 	ApuntadorAVD  int32
 	ApuntadorDD   int32
-	Permisos      int32
+	PermisoU      int32
+	PermisoG      int32
+	PermisoO      int32
 }

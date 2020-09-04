@@ -34,7 +34,33 @@ func EjecutarMkfs(id string, tipo string, add string, unit string) {
 
 				Formatear(PartStart, PartSize, tipo, PathAux)
 
-			} else if ExisteL, _ := ExisteParticionLogica(PathAux, NameAux); ExisteL { //SIGNIFICA QUE ES LOGICA (NO ES REQUISITO)
+			} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL { //SIGNIFICA QUE ES LOGICA (NO ES REQUISITO)
+
+				fileMBR, err := os.OpenFile(PathAux, os.O_RDWR, 0666)
+				if err != nil {
+					fmt.Println(err)
+					fileMBR.Close()
+				}
+
+				//EBRaux sera el apuntador al struct EBR temporal
+				EBRAux := estructuras.EBR{}
+				EBRSize := int(unsafe.Sizeof(EBRAux))
+				InicioParticion := IndiceL + EBRSize
+				fileMBR.Seek(int64(InicioParticion+1), 0)
+				EBRData := leerBytes(fileMBR, EBRSize)
+				buffer := bytes.NewBuffer(EBRData)
+				err = binary.Read(buffer, binary.BigEndian, &EBRAux)
+				if err != nil {
+					fileMBR.Close()
+					panic(err)
+				}
+
+				fileMBR.Close()
+
+				color.Printf("@{!m}La particion inicia en el byte: %d\n", InicioParticion)
+				color.Printf("@{!m}La particion tiene un size de: %d\n", EBRAux.Esize)
+
+				Formatear(InicioParticion, int(EBRAux.Esize), tipo, PathAux)
 
 			}
 
@@ -209,7 +235,9 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Seteando el apuntador de su DD, en este caso es InicioDDS
 		//al ser el primer DD que se usar
 		AVDaux.ApuntadorDD = sb.InicioDDS
-		AVDaux.Permisos = 664
+		AVDaux.PermisoU = 7
+		AVDaux.PermisoG = 7
+		AVDaux.PermisoO = 7
 		nombrePropietario := "root"
 		copy(ArrayNombre[:], nombrePropietario)
 		//Seteando nombre del propietario, en este caso la raiz pertenece al id "root"
@@ -268,7 +296,9 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		copy(ArrayNombre[:], nombrePropietario)
 		//Seteando nombre del archivo, al primer struct del arreglo del DD
 		copy(InodoAux.Proper[:], ArrayNombre[:])
-		InodoAux.Permisos = 664
+		InodoAux.PermisoU = 7
+		InodoAux.PermisoG = 7
+		InodoAux.PermisoO = 0
 		InodoAux.NumeroInodo = 1
 		InodoAux.FileSize = 32
 		InodoAux.NumeroBloques = 2

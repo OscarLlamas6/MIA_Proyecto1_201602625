@@ -9,6 +9,7 @@ func EjecutarLogout() {
 		sesionActiva = false
 		sesionRoot = false
 		idSesion = ""
+		idGrupo = ""
 		color.Println("@{!c}	Sesión cerrada correctamente.")
 	} else {
 		color.Println("@{!r}	No hay ninguna sesión activa actualmente.")

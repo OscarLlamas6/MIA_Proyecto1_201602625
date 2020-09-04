@@ -15,7 +15,7 @@ import (
 
 var (
 	sesionActiva, sesionRoot bool   = false, false
-	idSesion                 string = ""
+	idSesion, idGrupo        string = "", ""
 )
 
 //EjecutarLogin inicia sesión
@@ -27,7 +27,7 @@ func EjecutarLogin(name string, password string, id string) {
 			if IDYaRegistrado(id) {
 
 				if Verificacion := VerificarLogin(name, password, id); Verificacion {
-					color.Printf("@{!c}Usuario @{!y}%v @{!c}loggeado correctamente.\n", name)
+					color.Printf("@{!c}Usuario @{!y}%v @{!c}loggeado correctamente, pertenece al grupo @{!y}%v.\n", name, idGrupo)
 				} else {
 					color.Println("@{!r}No se pudo loggear, datos incorrectos o usuario no existe.")
 				}
@@ -158,6 +158,7 @@ func VerificarLogin(name string, password string, id string) bool {
 					if registro[3] == name && registro[4] == password {
 						fileMBR.Close()
 						idSesion = name
+						idGrupo = registro[2]
 						sesionActiva = true
 						if name == "root" {
 							sesionRoot = true

@@ -336,7 +336,9 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	DDPos := int(sb.InicioDDS) + (int(sb.SizeDD) * (PosicionEnBitmapDD))
 	//Seteamos el apuntador de su Detalle Directorio al nuevo AVD
 	newAVD.ApuntadorDD = int32(DDPos)
-	newAVD.Permisos = 664
+	newAVD.PermisoU = 6
+	newAVD.PermisoG = 6
+	newAVD.PermisoG = 4
 	//Ahora toca escribir el nuevo AVD en su posición correspondiente
 	file.Seek(int64(AVDPos+1), 0)
 	avdp := &newAVD
@@ -421,7 +423,9 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 			copy(newAVD2.NombreDir[:], AVDAux.NombreDir[:])
 			copy(newAVD2.Proper[:], AVDAux.Proper[:])
 			newAVD2.ApuntadorSubs[0] = int32(AVDPos)
-			newAVD2.Permisos = AVDAux.Permisos
+			newAVD2.PermisoU = AVDAux.PermisoU
+			newAVD2.PermisoG = AVDAux.PermisoG
+			newAVD2.PermisoO = AVDAux.PermisoO
 			//Ahora toca escribir el nuevo AVD en su posición correspondiente
 			file.Seek(int64(AVDPos2+1), 0)
 			avdp := &newAVD2
