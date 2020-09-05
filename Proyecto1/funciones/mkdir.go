@@ -244,6 +244,145 @@ func EjecutarMkdir(id string, path string, p string) {
 
 						if SB1.MontajesCount > 0 {
 
+							//NOS POSICIONAMOS DONDE EMPIEZA EL STRCUT DE LA CARPETA ROOT (primer struct AVD)
+							ApuntadorAVD := SB1.InicioAVDS
+							//CREAMOS UN STRUCT TEMPORAL
+							AVDAux := estructuras.AVD{}
+							SizeAVD := int(unsafe.Sizeof(AVDAux))
+							fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+							AnteriorData := leerBytes(fileMBR, int(SizeAVD))
+							buffer2 := bytes.NewBuffer(AnteriorData)
+							err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+							if err != nil {
+								fileMBR.Close()
+								fmt.Println(err)
+								return
+							}
+
+							var NombreAnterior [20]byte
+							copy(NombreAnterior[:], AVDAux.NombreDir[:])
+							//Vamos a comparar Padres e Hijos
+							carpetas := strings.Split(path, "/")
+							i := 1
+							PathCorrecto := true
+							for i < len(carpetas)-1 {
+
+								if TieneSub, ApuntadorSiguiente := ExisteSub(carpetas[i], int(ApuntadorAVD), PathAux); TieneSub {
+
+									//Si entramos a esta parte, significa que el padre si contiene al hijo (subdirectorio)
+									//El hijo sería otro padre en el path o directamente será el padre de la carpeta que queremos crear
+									//Por lo tanto leeremos otro AVD con el resultado de "APuntadorSiguiente" y seguiremos.
+									copy(NombreAnterior[:], AVDAux.NombreDir[:])
+									ApuntadorAVD = int32(ApuntadorSiguiente)
+									fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+									AnteriorData = leerBytes(fileMBR, int(SizeAVD))
+									buffer2 = bytes.NewBuffer(AnteriorData)
+									err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+									if err != nil {
+										fileMBR.Close()
+										fmt.Println(err)
+										return
+									}
+
+									i++
+									PathCorrecto = true
+
+								} else {
+
+									color.Printf("@{!g}La carpeta @{!y}%v @{!g}no existe\n", carpetas[i])
+
+									if p != "" {
+										//CREAR DIRECTORIO
+										//Si entramos a esta parte significa que el directorio requerido no existe Y que en el comando MKDIR
+										//se especificó el parámetro de recursividad, es decir debemos crear el directorio (el padre)
+
+										if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
+
+											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+
+												color.Printf("@{!g}Creando carpeta @{!y}%v\n", carpetas[i])
+
+												CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[i])
+												SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
+												SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
+												fileMBR.Seek(int64(InicioParticion+1), 0)
+												//Reescribiendo el Superbloque
+												sb1 := &SB1
+												var binario1 bytes.Buffer
+												binary.Write(&binario1, binary.BigEndian, sb1)
+												escribirBytes(fileMBR, binario1.Bytes())
+												//Reescribir el Backup del Superbloque
+												fileMBR.Seek(int64(SB1.InicioBitacora+(SB1.SizeBitacora*SB1.TotalBitacoras)+1), 0)
+												sb2 := &SB1
+												var binario2 bytes.Buffer
+												binary.Write(&binario2, binary.BigEndian, sb2)
+												escribirBytes(fileMBR, binario2.Bytes())
+												color.Printf("@{!m}La carpeta @{!y}%v @{!m}fue creada con éxito\n", carpetas[i])
+
+											} else {
+												PathCorrecto = false
+												color.Printf("@{!r} El usuario @{!y}%v @{!m}no tiene permisos de escritura en la carpeta @{!y}%v.\n", idSesion, string(NombreAnterior[:]))
+												break
+											}
+
+										} else {
+											PathCorrecto = false
+											color.Println("@{!r} Ya no hay espacio en el sistema de archivos para crear directorio. Acción fallida.")
+											break
+										}
+
+									} else {
+										PathCorrecto = false
+										break
+									}
+								}
+							}
+
+							if PathCorrecto {
+								//Si se llega a este punto es porque si existian los padres, o se crearon correctamente y podemos
+								//escribir el directorio hijo (DIR objectivo)
+								//En caso que todos los padres ya existieran
+								//Primero verificamos si ya existe el directorio para no repetir nombres
+								//En este punto APuntadorAVD apuntará al padre más cercano
+								if YaExiste, _ := ExisteSub(carpetas[len(carpetas)-1], int(ApuntadorAVD), PathAux); !YaExiste {
+
+									if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
+
+										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+
+											CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[len(carpetas)-1])
+											SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
+											SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
+											fileMBR.Seek(int64(InicioParticion+1), 0)
+											//Reescribiendo el Superbloque
+											sb1 := &SB1
+											var binario1 bytes.Buffer
+											binary.Write(&binario1, binary.BigEndian, sb1)
+											escribirBytes(fileMBR, binario1.Bytes())
+											//Reescribir el Backup del Superbloque
+											fileMBR.Seek(int64(SB1.InicioBitacora+(SB1.SizeBitacora*SB1.TotalBitacoras)+1), 0)
+											sb2 := &SB1
+											var binario2 bytes.Buffer
+											binary.Write(&binario2, binary.BigEndian, sb2)
+											escribirBytes(fileMBR, binario2.Bytes())
+											color.Printf("@{!m}La carpeta @{!y}%v @{!m}fue creada con éxito\n", carpetas[len(carpetas)-1])
+
+										} else {
+											PathCorrecto = false
+											color.Printf("@{!r} El usuario @{!y}%v @{!m}no tiene permisos de escritura en la carpeta @{!y}%v.\n", idSesion, string(NombreAnterior[:]))
+										}
+
+									} else {
+										color.Println("@{!r} Ya no hay espacio en el sistema de archivos para crear directorio. Acción fallida.")
+									}
+
+								} else {
+									color.Printf("@{!r}La carpeta @{!y}%v @{!r}ya existe.\n", carpetas[len(carpetas)-1])
+								}
+							} else {
+								color.Println("@{!r} Error, una o más carpetas padre no existen.")
+							}
+
 						} else {
 							color.Println("@{!r} La partición indicada no ha sido formateada.")
 						}
@@ -400,6 +539,10 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	var binario3 bytes.Buffer
 	binary.Write(&binario3, binary.BigEndian, avdp)
 	escribirBytes(file, binario3.Bytes())
+
+	//Actualizamos el SB
+	sb.FreeAVDS = sb.FreeAVDS - 1
+
 	//Escribimos un 1 en esa posición del bitmap DD
 	file.Seek(int64(BitmapPos+1), 0)
 	data = []byte{0x01}
@@ -412,6 +555,9 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	var binario4 bytes.Buffer
 	binary.Write(&binario4, binary.BigEndian, ddp)
 	escribirBytes(file, binario4.Bytes())
+
+	//Actualizamos el SB
+	sb.FreeDDS = sb.FreeDDS - 1
 
 	//En este punto ya está creada la nueva carpeta con su respectivo DD
 	//Ahora toca setear el apuntador al AVDPadre
@@ -482,6 +628,10 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 			newAVD2.PermisoU = AVDAux.PermisoU
 			newAVD2.PermisoG = AVDAux.PermisoG
 			newAVD2.PermisoO = AVDAux.PermisoO
+
+			//Actualizamos el SB
+			sb.FreeAVDS = sb.FreeAVDS - 1
+
 			//Ahora toca escribir el nuevo AVD en su posición correspondiente
 			file.Seek(int64(AVDPos2+1), 0)
 			avdp := &newAVD2
