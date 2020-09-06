@@ -39,6 +39,8 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteBitmapBloque(path, ruta, id)
 				} else if strings.ToLower(nombre) == "sb" {
 					ReporteSB(path, ruta, id)
+				} else if strings.ToLower(nombre) == "tree_complete" {
+					ReporteTreeComplete(path, ruta, id)
 				}
 			} else {
 				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
@@ -667,6 +669,19 @@ func ReporteSB(path string, ruta string, id string) {
 
 	} else {
 		color.Println("@{!r}El reporte SB solo puede generar archivos con extensión .png, .jpg ó .pdf.")
+	}
+
+}
+
+//ReporteTreeComplete crea el reporte del sistema completo
+func ReporteTreeComplete(path string, ruta string, id string) {
+
+	extension := filepath.Ext(path)
+
+	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
+
+	} else {
+		color.Println("@{!r}El reporte TREE_COMPLETE solo puede generar archivos con extensión .png, .jpg ó .pdf.")
 	}
 
 }
