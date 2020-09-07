@@ -10,15 +10,27 @@ import (
 func GenerarAVD(NoAVD int, AVDaux *estructuras.AVD) string {
 
 	n := bytes.Index(AVDaux.NombreDir[:], []byte{0})
+	if n == -1 {
+		n = len(AVDaux.NombreDir)
+	}
 	Directorio := string(AVDaux.NombreDir[:n])
 
 	n = bytes.Index(AVDaux.FechaCreacion[:], []byte{0})
+	if n == -1 {
+		n = len(AVDaux.FechaCreacion)
+	}
 	Fecha := string(AVDaux.FechaCreacion[:n])
 
 	n = bytes.Index(AVDaux.Proper[:], []byte{0})
+	if n == -1 {
+		n = len(AVDaux.Proper)
+	}
 	Propietario := string(AVDaux.Proper[:n])
 
 	n = bytes.Index(AVDaux.Grupo[:], []byte{0})
+	if n == -1 {
+		n = len(AVDaux.Grupo)
+	}
 	Grupo := string(AVDaux.Grupo[:n])
 
 	cadena := fmt.Sprintf(`AVD%v [label=<
@@ -27,7 +39,7 @@ func GenerarAVD(NoAVD int, AVDaux *estructuras.AVD) string {
 		   <TD bgcolor='purple' colspan="2"><font color='white' point-size='13'>AVD: %s</font></TD>
 	   </TR>
 	   <TR> 
-		   <TD bgcolor="slateblue2" >Fecha creación</TD>
+		   <TD bgcolor='slateblue2' >Fecha creación</TD>
 		   <TD bgcolor='slateblue2' > %s </TD>
 	   </TR>
 	   <TR>
@@ -88,56 +100,101 @@ func GenerarDD(NoDD int, DDaux *estructuras.DD, carpeta string) string {
 	// i = 0
 
 	n := bytes.Index(DDaux.DDFiles[0].Name[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[0].Name)
+	}
 	Nombre0 := string(DDaux.DDFiles[0].Name[:n])
 
 	n = bytes.Index(DDaux.DDFiles[0].FechaCreacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[0].FechaCreacion)
+	}
 	Fc0 := string(DDaux.DDFiles[0].FechaCreacion[:n])
 
 	n = bytes.Index(DDaux.DDFiles[0].FechaModificacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[0].FechaModificacion)
+	}
 	Fm0 := string(DDaux.DDFiles[0].FechaModificacion[:n])
 
 	// i = 1
 
 	n = bytes.Index(DDaux.DDFiles[1].Name[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[1].Name)
+	}
 	Nombre1 := string(DDaux.DDFiles[1].Name[:n])
 
 	n = bytes.Index(DDaux.DDFiles[1].FechaCreacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[1].FechaCreacion)
+	}
 	Fc1 := string(DDaux.DDFiles[1].FechaCreacion[:n])
 
 	n = bytes.Index(DDaux.DDFiles[1].FechaModificacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[1].FechaModificacion)
+	}
 	Fm1 := string(DDaux.DDFiles[1].FechaModificacion[:n])
 
 	// i = 2
 
 	n = bytes.Index(DDaux.DDFiles[2].Name[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[2].Name)
+	}
 	Nombre2 := string(DDaux.DDFiles[2].Name[:n])
 
 	n = bytes.Index(DDaux.DDFiles[2].FechaCreacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[2].FechaCreacion)
+	}
 	Fc2 := string(DDaux.DDFiles[2].FechaCreacion[:n])
 
 	n = bytes.Index(DDaux.DDFiles[2].FechaModificacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[2].FechaModificacion)
+	}
 	Fm2 := string(DDaux.DDFiles[2].FechaModificacion[:n])
 
 	// i = 3
 
 	n = bytes.Index(DDaux.DDFiles[3].Name[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[3].Name)
+	}
 	Nombre3 := string(DDaux.DDFiles[3].Name[:n])
 
 	n = bytes.Index(DDaux.DDFiles[3].FechaCreacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[3].FechaCreacion)
+	}
 	Fc3 := string(DDaux.DDFiles[3].FechaCreacion[:n])
 
 	n = bytes.Index(DDaux.DDFiles[3].FechaModificacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[3].FechaModificacion)
+	}
 	Fm3 := string(DDaux.DDFiles[3].FechaModificacion[:n])
 
 	// i = 4
 
 	n = bytes.Index(DDaux.DDFiles[4].Name[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[4].Name)
+	}
 	Nombre4 := string(DDaux.DDFiles[4].Name[:n])
 
 	n = bytes.Index(DDaux.DDFiles[4].FechaCreacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[4].FechaCreacion)
+	}
 	Fc4 := string(DDaux.DDFiles[4].FechaCreacion[:n])
 
 	n = bytes.Index(DDaux.DDFiles[4].FechaModificacion[:], []byte{0})
+	if n == -1 {
+		n = len(DDaux.DDFiles[4].FechaModificacion)
+	}
 	Fm4 := string(DDaux.DDFiles[4].FechaModificacion[:n])
 
 	cadena := fmt.Sprintf(`DD%v [label=<
@@ -243,9 +300,15 @@ func GenerarDD(NoDD int, DDaux *estructuras.DD, carpeta string) string {
 func GenerarInodo(NoInodo int, InodoAux *estructuras.Inodo) string {
 
 	n := bytes.Index(InodoAux.Proper[:], []byte{0})
+	if n == -1 {
+		n = len(InodoAux.Proper)
+	}
 	Propietario := string(InodoAux.Proper[:n])
 
 	n = bytes.Index(InodoAux.Grupo[:], []byte{0})
+	if n == -1 {
+		n = len(InodoAux.Grupo)
+	}
 	Grupo := string(InodoAux.Grupo[:n])
 
 	cadena := fmt.Sprintf(`Inodo%v [label=<
@@ -303,9 +366,12 @@ func GenerarInodo(NoInodo int, InodoAux *estructuras.Inodo) string {
 }
 
 //GenerarBloque devuelve un Bloque de datos seteado en formato string
-func GenerarBloque(NoBloque, Bloqueaux *estructuras.BloqueDatos) string {
+func GenerarBloque(NoBloque int, Bloqueaux *estructuras.BloqueDatos) string {
 
 	n := bytes.Index(Bloqueaux.Data[:], []byte{0})
+	if n == -1 {
+		n = len(Bloqueaux.Data)
+	}
 	contenido := string(Bloqueaux.Data[:n])
 
 	cadena := fmt.Sprintf(`Bloque%v [label=<

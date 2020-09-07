@@ -571,7 +571,7 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	escribirBytes(file, binario3.Bytes())
 
 	//Actualizamos el SB
-	sb.FreeAVDS = sb.FreeAVDS - 1
+	sb.FreeAVDS--
 
 	//Escribimos un 1 en esa posición del bitmap DD
 	file.Seek(int64(BitmapPos+1), 0)
@@ -587,7 +587,7 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	escribirBytes(file, binario4.Bytes())
 
 	//Actualizamos el SB
-	sb.FreeDDS = sb.FreeDDS - 1
+	sb.FreeDDS = sb.FreeDDS - int32(1)
 
 	//En este punto ya está creada la nueva carpeta con su respectivo DD
 	//Ahora toca setear el apuntador al AVDPadre
@@ -610,17 +610,25 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	for Continuar {
 		//Iteramos en las 6 posiciones del arreglo de subdirectoios (apuntadores)
 		for i := 0; i < 6; i++ {
+
 			//Validamos que el apuntador no este apuntando a algo
 			if AVDAux.ApuntadorSubs[i] == 0 {
 				AVDAux.ApuntadorSubs[i] = int32(AVDPos)
+				Continuar = false
 				break
 			}
 
 		}
+
+		if Continuar == false {
+			break
+		}
+
 		//Si todos los apuntadores en el arreglo están ocupados (apuntando a un AVD)
 		//verificamos si el AVD actual apunta hacia otro AVD con otros 6 apuntadores
 
 		if AVDAux.ApuntadorAVD > 0 {
+
 			//Leemos el AVD (que se considera contiguo)
 			file.Seek(int64(AVDAux.ApuntadorAVD+int32(1)), 0)
 			PosPadre = int(AVDAux.ApuntadorAVD)
@@ -660,7 +668,7 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 			newAVD2.PermisoO = AVDAux.PermisoO
 
 			//Actualizamos el SB
-			sb.FreeAVDS = sb.FreeAVDS - 1
+			sb.FreeAVDS = sb.FreeAVDS - int32(1)
 
 			//Ahora toca escribir el nuevo AVD en su posición correspondiente
 			file.Seek(int64(AVDPos2+1), 0)

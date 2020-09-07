@@ -235,6 +235,12 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Seteando el apuntador de su DD, en este caso es InicioDDS
 		//al ser el primer DD que se usar
 		AVDaux.ApuntadorDD = sb.InicioDDS
+		AVDaux.ApuntadorSubs[0] = 0
+		AVDaux.ApuntadorSubs[1] = 0
+		AVDaux.ApuntadorSubs[2] = 0
+		AVDaux.ApuntadorSubs[3] = 0
+		AVDaux.ApuntadorSubs[4] = 0
+		AVDaux.ApuntadorSubs[5] = 0
 		AVDaux.PermisoU = 7
 		AVDaux.PermisoG = 7
 		AVDaux.PermisoO = 7

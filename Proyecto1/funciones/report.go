@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,6 +15,11 @@ import (
 	"unsafe"
 
 	"github.com/doun/terminal/color"
+)
+
+var (
+	contadorAVD, contadorDD, contadorInodo, contadorBloque int    = 0, 0, 0, 0
+	cadenaArchivo                                          string = ""
 )
 
 //EjecutarReporte verifica el tipo de reporte segun el parametro NOMBRE
@@ -115,6 +121,9 @@ func ReporteMBR(path string, ruta string, id string) {
 				fmt.Fprintf(w, "   <tr><td>Part_%d_Fit</td><td>%v</td></tr>\n", PartNum, string(Disco1.Mpartitions[i].Pfit))
 				fmt.Fprintf(w, "   <tr><td>Part_%d_Start</td><td>%v</td></tr>\n", PartNum, Disco1.Mpartitions[i].Pstart)
 				n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+				if n == -1 {
+					n = len(Disco1.Mpartitions[i].Pname)
+				}
 				fmt.Fprintf(w, "   <tr><td>Part_%d_Name</td><td>%v</td></tr>\n", PartNum, string(Disco1.Mpartitions[i].Pname[:n]))
 				PartNum++
 			}
@@ -228,15 +237,24 @@ func ReporteDisk(path string, ruta string, id string) {
 
 						if Disco1.Mpartitions[i-1].Psize == 0 {
 							n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+							if n == -1 {
+								n = len(Disco1.Mpartitions[i].Pname)
+							}
 							fmt.Fprintf(w, "  <td colspan=\"%d\" bgcolor=\"#0cff04\">%v - Extendida</td>\n", Columnas, string(Disco1.Mpartitions[i].Pname[:n]))
 						} else {
 
 							if (Disco1.Mpartitions[i-1].Pstart + Disco1.Mpartitions[i-1].Psize) == Disco1.Mpartitions[i].Pstart {
 								n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+								if n == -1 {
+									n = len(Disco1.Mpartitions[i].Pname)
+								}
 								fmt.Fprintf(w, "  <td colspan=\"%d\" bgcolor=\"#0cff04\">%v - Extendida</td>\n", Columnas, string(Disco1.Mpartitions[i].Pname[:n]))
 							} else {
 								fmt.Fprint(w, "  <td rowspan=\"2\" bgcolor=\"skyblue\">Libre</td>")
 								n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+								if n == -1 {
+									n = len(Disco1.Mpartitions[i].Pname)
+								}
 								fmt.Fprintf(w, "  <td colspan=\"%d\" bgcolor=\"#0cff04\">%v - Extendida</td>\n", Columnas, string(Disco1.Mpartitions[i].Pname[:n]))
 							}
 
@@ -253,21 +271,33 @@ func ReporteDisk(path string, ruta string, id string) {
 
 						if Disco1.Mpartitions[i-1].Psize == 0 {
 							n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+							if n == -1 {
+								n = len(Disco1.Mpartitions[i].Pname)
+							}
 							fmt.Fprintf(w, "  <td rowspan=\"2\" bgcolor=\"yellow\">%v - Primaria</td>\n", string(Disco1.Mpartitions[i].Pname[:n]))
 						} else {
 
 							if (Disco1.Mpartitions[i-1].Pstart + Disco1.Mpartitions[i-1].Psize) == Disco1.Mpartitions[i].Pstart {
 								n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+								if n == -1 {
+									n = len(Disco1.Mpartitions[i].Pname)
+								}
 								fmt.Fprintf(w, "  <td rowspan=\"2\" bgcolor=\"yellow\">%v - Primaria</td>\n", string(Disco1.Mpartitions[i].Pname[:n]))
 							} else {
 								fmt.Fprint(w, "  <td rowspan=\"2\" bgcolor=\"skyblue\">Libre</td>")
 								n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+								if n == -1 {
+									n = len(Disco1.Mpartitions[i].Pname)
+								}
 								fmt.Fprintf(w, "  <td rowspan=\"2\" bgcolor=\"yellow\">%v - Primaria</td>\n", string(Disco1.Mpartitions[i].Pname[:n]))
 							}
 						}
 
 					} else {
 						n := bytes.Index(Disco1.Mpartitions[i].Pname[:], []byte{0})
+						if n == -1 {
+							n = len(Disco1.Mpartitions[i].Pname)
+						}
 						fmt.Fprintf(w, "  <td rowspan=\"2\" bgcolor=\"yellow\">%v - Primaria</td>\n", string(Disco1.Mpartitions[i].Pname[:n]))
 					}
 				}
@@ -463,6 +493,9 @@ func ReporteSB(path string, ruta string, id string) {
 
 				///////////SETEAR DATOS DEL SUPERBLOQUE
 				n := bytes.Index(SB1.Name[:], []byte{0})
+				if n == -1 {
+					n = len(SB1.Name)
+				}
 				fmt.Fprintf(w, "   <tr><td>Nombre</td><td>%v</td></tr>\n", string(SB1.Name[:n]))
 				fmt.Fprintf(w, "   <tr><td>Total AVDs</td><td>%v</td></tr>\n", SB1.TotalAVDS)
 				fmt.Fprintf(w, "   <tr><td>Total DDs</td><td>%v</td></tr>\n", SB1.TotalDDS)
@@ -475,8 +508,14 @@ func ReporteSB(path string, ruta string, id string) {
 				fmt.Fprintf(w, "   <tr><td>Free Bloques</td><td>%v</td></tr>\n", SB1.FreeBloques)
 				fmt.Fprintf(w, "   <tr><td>Free Bitacoras</td><td>%v</td></tr>\n", SB1.FreeBitacoras)
 				n = bytes.Index(SB1.DateCreacion[:], []byte{0})
+				if n == -1 {
+					n = len(SB1.DateCreacion)
+				}
 				fmt.Fprintf(w, "   <tr><td>Fecha creación</td><td>%v</td></tr>\n", string(SB1.DateCreacion[:n]))
 				n = bytes.Index(SB1.DateLastMount[:], []byte{0})
+				if n == -1 {
+					n = len(SB1.DateLastMount)
+				}
 				fmt.Fprintf(w, "   <tr><td>Fecha creación</td><td>%v</td></tr>\n", string(SB1.DateLastMount[:n]))
 				fmt.Fprintf(w, "   <tr><td>No. Montajes</td><td>%v</td></tr>\n", SB1.MontajesCount)
 				fmt.Fprintf(w, "   <tr><td>Apuntador Bitmap AVDs</td><td>%v</td></tr>\n", SB1.InicioBitmapAVDS)
@@ -603,8 +642,14 @@ func ReporteSB(path string, ruta string, id string) {
 				fmt.Fprintf(w, "   <tr><td>Free Bloques</td><td>%v</td></tr>\n", SB1.FreeBloques)
 				fmt.Fprintf(w, "   <tr><td>Free Bitacoras</td><td>%v</td></tr>\n", SB1.FreeBitacoras)
 				n = bytes.Index(SB1.DateCreacion[:], []byte{0})
+				if n == -1 {
+					n = len(SB1.DateCreacion)
+				}
 				fmt.Fprintf(w, "   <tr><td>Fecha creación</td><td>%v</td></tr>\n", string(SB1.DateCreacion[:n]))
 				n = bytes.Index(SB1.DateLastMount[:], []byte{0})
+				if n == -1 {
+					n = len(SB1.DateLastMount)
+				}
 				fmt.Fprintf(w, "   <tr><td>Fecha Modificación</td><td>%v</td></tr>\n", string(SB1.DateLastMount[:n]))
 				fmt.Fprintf(w, "   <tr><td>No. Montajes</td><td>%v</td></tr>\n", SB1.MontajesCount)
 				fmt.Fprintf(w, "   <tr><td>Apuntador Bitmap AVDs</td><td>%v</td></tr>\n", SB1.InicioBitmapAVDS)
@@ -680,8 +725,454 @@ func ReporteTreeComplete(path string, ruta string, id string) {
 
 	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
 
+		NameAux, PathAux := GetDatosPart(id)
+
+		if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+			//LEER Y RECORRER EL MBR
+			fileMBR, err2 := os.Open(PathAux)
+			if err2 != nil { //validar que no sea nulo.
+				panic(err2)
+			}
+
+			Disco1 := estructuras.MBR{}
+			DiskSize := int(unsafe.Sizeof(Disco1))
+			DiskData := leerBytes(fileMBR, DiskSize)
+			buffer := bytes.NewBuffer(DiskData)
+			err := binary.Read(buffer, binary.BigEndian, &Disco1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := Disco1.Mpartitions[Indice].Pstart
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				//NOS POSICIONAMOS DONDE EMPIEZA EL STRUCT DE LA CARPETA ROOT (primer struct AVD)
+				ApuntadorAVD := SB1.InicioAVDS
+				//CREAMOS UN STRUCT TEMPORAL
+				AVDroot := estructuras.AVD{}
+				SizeAVD := int(unsafe.Sizeof(AVDroot))
+				fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+				RootData := leerBytes(fileMBR, int(SizeAVD))
+				buffer2 := bytes.NewBuffer(RootData)
+				err = binary.Read(buffer2, binary.BigEndian, &AVDroot)
+				if err != nil {
+					fileMBR.Close()
+					fmt.Println(err)
+					return
+				}
+
+				EscribirTreeComplete(fileMBR, &AVDroot, extension, path)
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				//NOS POSICIONAMOS DONDE EMPIEZA EL STRUCT DE LA CARPETA ROOT (primer struct AVD)
+				ApuntadorAVD := SB1.InicioAVDS
+				//CREAMOS UN STRUCT TEMPORAL
+				AVDroot := estructuras.AVD{}
+				SizeAVD := int(unsafe.Sizeof(AVDroot))
+				fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+				RootData := leerBytes(fileMBR, int(SizeAVD))
+				buffer2 := bytes.NewBuffer(RootData)
+				err = binary.Read(buffer2, binary.BigEndian, &AVDroot)
+				if err != nil {
+					fileMBR.Close()
+					fmt.Println(err)
+					return
+				}
+
+				EscribirTreeComplete(fileMBR, &AVDroot, extension, path)
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+		}
+
 	} else {
 		color.Println("@{!r}El reporte TREE_COMPLETE solo puede generar archivos con extensión .png, .jpg ó .pdf.")
+	}
+
+}
+
+//EscribirTreeComplete genera el reporte TreeComplete al recibir la AVD de la raiz
+func EscribirTreeComplete(MBRfile *os.File, AVDroot *estructuras.AVD, extension string, path string) {
+
+	file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+		return
+	}
+
+	// Change permissions Linux.
+	err = os.Chmod("codigo.dot", 0666)
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+		return
+	}
+
+	file.Truncate(0)
+	file.Seek(0, 0)
+
+	w := bufio.NewWriter(file)
+
+	fmt.Fprint(w, `digraph Tree {
+		node [shape=plaintext];
+		rankdir =LR;
+		`)
+
+	///////// AQUI COMENZAMOS A RECORRER TODO EL SISTEMA LWH /////////////////////////////////
+
+	contadorAVD = 0
+	contadorDD = 0
+	contadorInodo = 0
+	contadorBloque = 0
+	cadenaArchivo = ""
+
+	EscribirAVDRecursivo(MBRfile, AVDroot, contadorAVD)
+
+	fmt.Fprint(w, cadenaArchivo)
+
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	fmt.Fprint(w, `}`)
+
+	w.Flush()
+
+	file.Close()
+
+	extT := "-T"
+
+	switch strings.ToLower(extension) {
+	case ".png":
+		extT += "png"
+	case ".pdf":
+		extT += "pdf"
+	case ".jpg":
+		extT += "jpg"
+	default:
+
+	}
+
+	carpeta := filepath.Dir(path)
+	SVGpath := carpeta + "/treecomplete.svg"
+
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("dot", extT, "-o", path, "codigo.dot")
+		cmd.Run()
+		cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo.dot")
+		cmd2.Run()
+	} else {
+		cmd := exec.Command("dot", extT, "-o", path, "codigo.dot")
+		cmd.Run()
+		cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo.dot")
+		cmd2.Run()
+	}
+
+}
+
+//EscribirAVDRecursivo recorre un AVD
+func EscribirAVDRecursivo(file *os.File, AVDAux *estructuras.AVD, NoAVD int) {
+
+	cadenaArchivo += GenerarAVD(contadorAVD, AVDAux)
+	contadorAVD++
+
+	for i := 0; i < 6; i++ {
+
+		if AVDAux.ApuntadorSubs[i] > 0 {
+
+			//Con el valor del apuntador leemos un struct AVD
+			AVDHijo := estructuras.AVD{}
+			file.Seek(int64(int32(AVDAux.ApuntadorSubs[i])+int32(1)), 0)
+			SizeAVD := int(unsafe.Sizeof(AVDHijo))
+			HijoData := leerBytes(file, int(SizeAVD))
+			buffer := bytes.NewBuffer(HijoData)
+			err := binary.Read(buffer, binary.BigEndian, &AVDHijo)
+			if err != nil {
+				log.Fatal(err)
+				fmt.Println(err)
+				return
+
+			}
+
+			cadenaArchivo += fmt.Sprintf(`AVD%v:%v->AVD%v
+			
+				`, NoAVD, i, contadorAVD)
+
+			EscribirAVDRecursivo(file, &AVDHijo, contadorAVD)
+
+		}
+	}
+
+	cadenaArchivo += fmt.Sprintf(`AVD%v:6->DD%v
+
+			`, NoAVD, contadorDD)
+
+	//Con el valor del apuntador leemos un struct DD
+	DDAux := estructuras.DD{}
+	_, err := file.Seek(int64(AVDAux.ApuntadorDD+int32(1)), 0)
+	if err != nil {
+		log.Fatal(err)
+		fmt.Println(err)
+		return
+
+	}
+	SizeDD := int(unsafe.Sizeof(DDAux))
+	DDData := leerBytes(file, int(SizeDD))
+	buffer := bytes.NewBuffer(DDData)
+	err = binary.Read(buffer, binary.BigEndian, &DDAux)
+	if err != nil {
+		log.Fatal(err)
+		fmt.Println(err)
+		return
+
+	}
+
+	n := bytes.Index(AVDAux.NombreDir[:], []byte{0})
+	if n == -1 {
+		n = len(AVDAux.NombreDir)
+	}
+	carpeta := string(AVDAux.NombreDir[:n])
+	EscribirDDRecursivo(file, &DDAux, contadorDD, carpeta)
+
+	if AVDAux.ApuntadorAVD > 0 {
+
+		cadenaArchivo += fmt.Sprintf(`AVD%v:7->AVD%v
+
+			`, NoAVD, contadorAVD)
+
+		//Con el valor del apuntador leemos un struct AVD
+		AVDExt := estructuras.AVD{}
+		file.Seek(int64(AVDAux.ApuntadorAVD+int32(1)), 0)
+		SizeAVD := int(unsafe.Sizeof(AVDExt))
+		AVDData := leerBytes(file, int(SizeAVD))
+		buffer := bytes.NewBuffer(AVDData)
+		err := binary.Read(buffer, binary.BigEndian, &AVDExt)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		EscribirAVDExtRecursivo(file, &AVDExt, contadorAVD)
+	}
+
+}
+
+//EscribirAVDExtRecursivo recorre la extensión del AVD
+func EscribirAVDExtRecursivo(file *os.File, AVDAux *estructuras.AVD, NoAVD int) {
+
+	cadenaArchivo += GenerarAVD(contadorAVD, AVDAux)
+	contadorAVD++
+
+	for i := 0; i < 6; i++ {
+
+		if AVDAux.ApuntadorSubs[i] > 0 {
+
+			//Con el valor del apuntador leemos un struct AVD
+			AVDHijo := estructuras.AVD{}
+			file.Seek(int64(AVDAux.ApuntadorSubs[i]+int32(1)), 0)
+			SizeAVD := int(unsafe.Sizeof(AVDHijo))
+			HijoData := leerBytes(file, int(SizeAVD))
+			buffer := bytes.NewBuffer(HijoData)
+			err := binary.Read(buffer, binary.BigEndian, &AVDHijo)
+			if err != nil {
+				log.Fatal(err)
+				fmt.Println(err)
+				return
+
+			}
+
+			cadenaArchivo += fmt.Sprintf(`AVD%v:%v->AVD%v
+			
+				`, NoAVD, i, contadorAVD)
+
+			EscribirAVDRecursivo(file, &AVDHijo, contadorAVD)
+
+		}
+	}
+
+	if AVDAux.ApuntadorAVD > 0 {
+
+		cadenaArchivo += fmt.Sprintf(`AVD%v:7->AVD%v
+	
+		`, NoAVD, contadorAVD)
+
+		//Con el valor del apuntador leemos un struct AVD
+		AVDExt := estructuras.AVD{}
+		file.Seek(int64(AVDAux.ApuntadorAVD+int32(1)), 0)
+		SizeAVD := int(unsafe.Sizeof(AVDExt))
+		AVDData := leerBytes(file, int(SizeAVD))
+		buffer := bytes.NewBuffer(AVDData)
+		err := binary.Read(buffer, binary.BigEndian, &AVDExt)
+		if err != nil {
+			log.Fatal(err)
+			fmt.Println(err)
+			return
+		}
+
+		EscribirAVDExtRecursivo(file, &AVDExt, contadorAVD)
+	}
+
+}
+
+//EscribirDDRecursivo recorre el detalle de directorio
+func EscribirDDRecursivo(file *os.File, DDaux *estructuras.DD, NoDD int, carpeta string) {
+
+	cadenaArchivo += GenerarDD(NoDD, DDaux, carpeta)
+	contadorDD++
+
+	for i := 0; i < 5; i++ {
+
+		if DDaux.DDFiles[i].ApuntadorInodo > 0 {
+
+			//Con el valor del apuntador leemos un struct Inodo
+			InodoAux := estructuras.Inodo{}
+			file.Seek(int64(DDaux.DDFiles[i].ApuntadorInodo+int32(1)), 0)
+			SizeInodo := int(unsafe.Sizeof(InodoAux))
+			InodoData := leerBytes(file, int(SizeInodo))
+			buffer := bytes.NewBuffer(InodoData)
+			err := binary.Read(buffer, binary.BigEndian, &InodoAux)
+			if err != nil {
+				fmt.Println(err)
+				return
+
+			}
+
+			cadenaArchivo += fmt.Sprintf(`DD%v:%v->Inodo%v
+			
+				`, NoDD, i, contadorInodo)
+
+			EscribirInodoRecursivo(file, &InodoAux, contadorInodo)
+
+		}
+	}
+
+	if DDaux.ApuntadorDD > 0 {
+
+		cadenaArchivo += fmt.Sprintf(`DD%v:5->DD%v
+	
+		`, NoDD, contadorDD)
+
+		//Con el valor del apuntador leemos un struct DD
+		DDExt := estructuras.DD{}
+		file.Seek(int64(DDaux.ApuntadorDD+int32(1)), 0)
+		SizeDD := int(unsafe.Sizeof(DDExt))
+		ExtData := leerBytes(file, int(SizeDD))
+		buffer := bytes.NewBuffer(ExtData)
+		err := binary.Read(buffer, binary.BigEndian, &DDExt)
+		if err != nil {
+			fmt.Println(err)
+			return
+
+		}
+
+		EscribirDDRecursivo(file, &DDExt, contadorDD, carpeta)
+	}
+
+}
+
+//EscribirInodoRecursivo recorre el inodo
+func EscribirInodoRecursivo(file *os.File, InodoAux *estructuras.Inodo, NoInodo int) {
+
+	cadenaArchivo += GenerarInodo(contadorInodo, InodoAux)
+	contadorInodo++
+
+	for i := 0; i < 4; i++ {
+
+		if InodoAux.ApuntadoresBloques[i] > 0 {
+
+			cadenaArchivo += fmt.Sprintf(`Inodo%v:%v->Bloque%v
+			
+				`, NoInodo, i, contadorBloque)
+
+			//Con el valor del apuntador leemos un struct Bloque
+			BloqueAux := estructuras.BloqueDatos{}
+			file.Seek(int64(InodoAux.ApuntadoresBloques[i]+int32(1)), 0)
+			SizeBloque := int(unsafe.Sizeof(BloqueAux))
+			BloqueData := leerBytes(file, int(SizeBloque))
+			buffer := bytes.NewBuffer(BloqueData)
+			err := binary.Read(buffer, binary.BigEndian, &BloqueAux)
+			if err != nil {
+				fmt.Println(err)
+				return
+
+			}
+
+			cadenaArchivo += GenerarBloque(contadorBloque, &BloqueAux)
+			contadorBloque++
+
+		}
+
+	}
+
+	if InodoAux.ApuntadorIndirecto > 0 {
+
+		cadenaArchivo += fmt.Sprintf(`Inodo%v:4->Inodo%v
+			
+				`, NoInodo, contadorInodo)
+
+		//Con el valor del apuntador leemos un struct Inodo
+		InodoExt := estructuras.Inodo{}
+		file.Seek(int64(InodoAux.ApuntadorIndirecto+int32(1)), 0)
+		SizeInodo := int(unsafe.Sizeof(InodoExt))
+		ExtData := leerBytes(file, int(SizeInodo))
+		buffer := bytes.NewBuffer(ExtData)
+		err := binary.Read(buffer, binary.BigEndian, &InodoExt)
+		if err != nil {
+			fmt.Println(err)
+			return
+
+		}
+
+		EscribirInodoRecursivo(file, &InodoExt, contadorInodo)
 	}
 
 }

@@ -608,10 +608,16 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 				copy(DDAux.DDFiles[i].FechaCreacion[:], chars[:])
 				copy(DDAux.DDFiles[i].FechaModificacion[:], chars[:])
 				DDAux.DDFiles[i].ApuntadorInodo = int32(InodoPos)
+				Continuar = false
 				break
 			}
 
 		}
+
+		if Continuar == false {
+			break
+		}
+
 		//Si todos los apuntadores en el arreglo están ocupados (apuntando a un inodo)
 		//verificamos si el DD actual apunta hacia otro DD con otros 5 apuntadores
 
