@@ -104,6 +104,8 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Seteando Superbloque
 
 		sb := estructuras.Superblock{}
+		sb.PartSize = int32(PartStart)
+		sb.PartSize = int32(PartSize)
 		var chars [16]byte
 		VirtualName := filepath.Base(path)
 		copy(chars[:], VirtualName)
@@ -115,9 +117,9 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		sb.TotalBitacoras = cantidadBitacoras
 		sb.FreeAVDS = cantidadAVDS - int32(1)
 		sb.FreeDDS = cantidadDDS - int32(1)
-		sb.FreeInodos = cantidadInodos - int32(1)
-		sb.FreeBloques = cantidadBloques - int32(2)
-		sb.FreeBitacoras = cantidadBitacoras
+		sb.FreeInodos = cantidadInodos - int32(1)       //Restamos 1 bloque porque al escribir users.txt ocupamos 1 bloque
+		sb.FreeBloques = cantidadBloques - int32(2)     //Restamos 2 bloques porque al escribir users.txt ocupamos 2 bloques
+		sb.FreeBitacoras = cantidadBitacoras - int32(2) //Restamos porque al crear la carpeta Root y el archivo Users.txt ocupamos 2 bitacoras
 		t := time.Now()
 		var charsDate [20]byte
 		cadena := t.Format("2006-01-02 15:04:05")
@@ -362,6 +364,74 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		var binario7 bytes.Buffer
 		binary.Write(&binario7, binary.BigEndian, bloque2p)
 		escribirBytes(file, binario7.Bytes())
+
+		///////////// ESCRIBIENDO BITACORAS ////////////////////////
+		//Creamos la bitacora para la creación de la carpeta raiz "/"
+		BitacoraAux := estructuras.Bitacora{}
+		//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+		var PathChars [100]byte
+		PathAux := "/"
+		copy(PathChars[:], PathAux)
+		copy(BitacoraAux.Path[:], PathChars[:])
+		//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+		var OperacionChars [16]byte
+		OperacionAux := "Mkdir"
+		copy(OperacionChars[:], OperacionAux)
+		copy(BitacoraAux.Operacion[:], OperacionChars[:])
+		//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+		BitacoraAux.Tipo = 1
+		BitacoraAux.Size = -1
+		//Seteamo la fecha de creación de la bitácora
+		t = time.Now()
+		var charsTime [20]byte
+		cadena = t.Format("2006-01-02 15:04:05")
+		copy(charsTime[:], cadena)
+		copy(BitacoraAux.Fecha[:], charsTime[:])
+		//Calculamos la posicion en la particion donde debemos escribir la bitacora
+		//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+		BitacoraPos := sb.InicioBitacora
+		//Ahora toca escribir el struct Bitacora en su posición correspondiente
+		file.Seek(int64(BitacoraPos+1), 0)
+		bitacorap := &BitacoraAux
+		var binario8 bytes.Buffer
+		binary.Write(&binario8, binary.BigEndian, bitacorap)
+		escribirBytes(file, binario8.Bytes())
+
+		//Creamos la bitacora para la creación del archivo "/users.txt"
+		BitacoraAux2 := estructuras.Bitacora{}
+		//Seteamos el path, en este caso el archivo tiene "/users.txt"
+		var PathChars2 [100]byte
+		PathAux2 := "/users.txt"
+		copy(PathChars2[:], PathAux2)
+		copy(BitacoraAux2.Path[:], PathChars2[:])
+		//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+		var OperacionChars2 [16]byte
+		OperacionAux2 := "Mkfile"
+		copy(OperacionChars2[:], OperacionAux2)
+		copy(BitacoraAux2.Operacion[:], OperacionChars2[:])
+		//Seteamos el contenido del archivo users.txt
+		var ContenidoChars [300]byte
+		contenidoAux := "1,G,root\n1,U,root,root,201602625"
+		copy(ContenidoChars[:], contenidoAux)
+		copy(BitacoraAux2.Contenido[:], ContenidoChars[:])
+		//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+		BitacoraAux2.Tipo = 0
+		BitacoraAux2.Size = 32
+		//Seteamos la fecha de creación de la bitácora
+		t = time.Now()
+		var charsTime2 [20]byte
+		cadena = t.Format("2006-01-02 15:04:05")
+		copy(charsTime2[:], cadena)
+		copy(BitacoraAux2.Fecha[:], charsTime2[:])
+		//Calculamos la posicion en la particion donde debemos escribir la bitacora
+		//en este caso será la segunda bitacora
+		BitacoraPos = sb.InicioBitacora + sizeBitacora
+		//Ahora toca escribir el struct Bitacora en su posición correspondiente
+		file.Seek(int64(BitacoraPos+1), 0)
+		bitacorap2 := &BitacoraAux2
+		var binario9 bytes.Buffer
+		binary.Write(&binario9, binary.BigEndian, bitacorap2)
+		escribirBytes(file, binario9.Bytes())
 
 		file.Close()
 

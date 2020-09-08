@@ -35,4 +35,6 @@ type Superblock struct {
 	FirstFreeInodo      int32
 	FirstFreeBloque     int32
 	MagicNum            int32
+	PartStart           int32
+	PartSize            int32
 }

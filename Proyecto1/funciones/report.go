@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	contadorAVD, contadorDD, contadorInodo, contadorBloque int    = 0, 0, 0, 0
-	cadenaArchivo                                          string = ""
+	contadorAVD, contadorDD, contadorInodo, contadorBloque, contadorBitacoras int    = 0, 0, 0, 0, 0
+	cadenaArchivo                                                             string = ""
 )
 
 //EjecutarReporte verifica el tipo de reporte segun el parametro NOMBRE
@@ -51,6 +51,8 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteTreeDirectorio(path, ruta, id)
 				} else if strings.ToLower(nombre) == "tree_file" {
 					ReporteTreeFile(path, ruta, id)
+				} else if strings.ToLower(nombre) == "bitacora" {
+					ReporteBitacora(path, ruta, id)
 				}
 			} else {
 				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
@@ -742,6 +744,302 @@ func ReporteSB(path string, ruta string, id string) {
 
 	} else {
 		color.Println("@{!r}El reporte SB solo puede generar archivos con extensión .png, .jpg ó .pdf.")
+	}
+
+}
+
+//ReporteBitacora crea el reporte de las bitacoras
+func ReporteBitacora(path string, ruta string, id string) {
+
+	extension := filepath.Ext(path)
+	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
+
+		NameAux, PathAux := GetDatosPart(id)
+
+		if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+			//LEER Y RECORRER EL MBR
+			fileMBR, err2 := os.Open(PathAux)
+			if err2 != nil { //validar que no sea nulo.
+				panic(err2)
+			}
+			Disco1 := estructuras.MBR{}
+			DiskSize := int(unsafe.Sizeof(Disco1))
+			DiskData := leerBytes(fileMBR, DiskSize)
+			buffer := bytes.NewBuffer(DiskData)
+			err := binary.Read(buffer, binary.BigEndian, &Disco1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := Disco1.Mpartitions[Indice].Pstart
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+
+				if NumeroBitacoras > 0 {
+
+					file, err := os.OpenFile("codigo9.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+					if err != nil {
+						fmt.Println(err)
+						file.Close()
+						return
+					}
+
+					// Change permissions Linux.
+					err = os.Chmod("codigo9.dot", 0666)
+					if err != nil {
+						fmt.Println(err)
+						file.Close()
+						return
+					}
+
+					file.Truncate(0)
+					file.Seek(0, 0)
+
+					w := bufio.NewWriter(file)
+
+					fmt.Fprint(w, `digraph Bitacoras {
+					node [shape=plaintext];
+					`)
+
+					///////// AQUI COMENZAMOS A RECORRER TODO EL SISTEMA LWH /////////////////////////////////
+
+					contadorBitacoras = 0
+					cadenaArchivo = ""
+
+					for i := 0; i < NumeroBitacoras; i++ {
+
+						//LEER EL SUPERBLOQUE
+						InicioBitacora := SB1.InicioBitacora + (int32(i) * SB1.SizeBitacora)
+						fileMBR.Seek(int64(InicioBitacora+1), 0)
+						BitacoraAux := estructuras.Bitacora{}
+						BitacoraSize := int(unsafe.Sizeof(BitacoraAux))
+						BitacoraData := leerBytes(fileMBR, BitacoraSize)
+						buffer := bytes.NewBuffer(BitacoraData)
+						err = binary.Read(buffer, binary.BigEndian, &BitacoraAux)
+						if err != nil {
+							fileMBR.Close()
+							fmt.Println(err)
+							return
+						}
+
+						cadenaArchivo += GenerarBitacora(contadorBitacoras, &BitacoraAux)
+						contadorBitacoras++
+
+						if (i + 1) < NumeroBitacoras {
+							cadenaArchivo += fmt.Sprintf(`B%v->B%v[style=invis]
+							
+							`, contadorBitacoras-1, contadorBitacoras)
+						}
+
+					}
+
+					fmt.Fprint(w, cadenaArchivo)
+
+					///////////////////////////////////////////////////////////////////////////////////////
+
+					fmt.Fprint(w, `}`)
+
+					w.Flush()
+
+					file.Close()
+
+					extT := "-T"
+
+					switch strings.ToLower(extension) {
+					case ".png":
+						extT += "png"
+					case ".pdf":
+						extT += "pdf"
+					case ".jpg":
+						extT += "jpg"
+					default:
+
+					}
+
+					carpeta := filepath.Dir(path)
+					SVGpath := carpeta + "/bitacoras.svg"
+
+					if runtime.GOOS == "windows" {
+						cmd := exec.Command("dot", extT, "-o", path, "codigo9.dot")
+						cmd.Run()
+						cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo9.dot")
+						cmd2.Run()
+					} else {
+						cmd := exec.Command("dot", extT, "-o", path, "codigo9.dot")
+						cmd.Run()
+						cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo9.dot")
+						cmd2.Run()
+					}
+
+					color.Print("@{!m}El reporte@{!y} BITACORA @{!m}fue creado con éxito\n")
+
+				} else {
+					color.Println("@{!r} No hay ninguna bitácora en el sistema LWH.")
+				}
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+
+		} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+
+			fileMBR, err := os.Open(PathAux)
+			if err != nil { //validar que no sea nulo.
+				panic(err)
+			}
+
+			EBRAux := estructuras.EBR{}
+			EBRSize := int(unsafe.Sizeof(EBRAux))
+
+			//LEER EL SUPERBLOQUE
+			InicioParticion := IndiceL + EBRSize
+			fileMBR.Seek(int64(InicioParticion+1), 0)
+			SB1 := estructuras.Superblock{}
+			SBsize := int(unsafe.Sizeof(SB1))
+			SBData := leerBytes(fileMBR, SBsize)
+			buffer2 := bytes.NewBuffer(SBData)
+			err = binary.Read(buffer2, binary.BigEndian, &SB1)
+			if err != nil {
+				fileMBR.Close()
+				fmt.Println(err)
+				return
+			}
+
+			if SB1.MontajesCount > 0 {
+
+				NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+
+				if NumeroBitacoras > 0 {
+
+					file, err := os.OpenFile("codigo9.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+					if err != nil {
+						fmt.Println(err)
+						file.Close()
+						return
+					}
+
+					// Change permissions Linux.
+					err = os.Chmod("codigo9.dot", 0666)
+					if err != nil {
+						fmt.Println(err)
+						file.Close()
+						return
+					}
+
+					file.Truncate(0)
+					file.Seek(0, 0)
+
+					w := bufio.NewWriter(file)
+
+					fmt.Fprint(w, `digraph Bitacoras {
+					node [shape=plaintext];
+					`)
+
+					///////// AQUI COMENZAMOS A RECORRER TODO EL SISTEMA LWH /////////////////////////////////
+
+					contadorBitacoras = 0
+					cadenaArchivo = ""
+
+					for i := 0; i < NumeroBitacoras; i++ {
+
+						//LEER EL SUPERBLOQUE
+						InicioBitacora := SB1.InicioBitacora + (int32(i) * SB1.SizeBitacora)
+						fileMBR.Seek(int64(InicioBitacora+1), 0)
+						BitacoraAux := estructuras.Bitacora{}
+						BitacoraSize := int(unsafe.Sizeof(BitacoraAux))
+						BitacoraData := leerBytes(fileMBR, BitacoraSize)
+						buffer := bytes.NewBuffer(BitacoraData)
+						err = binary.Read(buffer, binary.BigEndian, &BitacoraAux)
+						if err != nil {
+							fileMBR.Close()
+							fmt.Println(err)
+							return
+						}
+
+						cadenaArchivo += GenerarBitacora(contadorBitacoras, &BitacoraAux)
+						contadorBitacoras++
+
+						if (i + 1) < NumeroBitacoras {
+							cadenaArchivo += fmt.Sprintf(`B%v->B%v[style=invis]
+							
+							`, contadorBitacoras-1, contadorBitacoras)
+						}
+
+					}
+
+					fmt.Fprint(w, cadenaArchivo)
+
+					///////////////////////////////////////////////////////////////////////////////////////
+
+					fmt.Fprint(w, `}`)
+
+					w.Flush()
+
+					file.Close()
+
+					extT := "-T"
+
+					switch strings.ToLower(extension) {
+					case ".png":
+						extT += "png"
+					case ".pdf":
+						extT += "pdf"
+					case ".jpg":
+						extT += "jpg"
+					default:
+
+					}
+
+					carpeta := filepath.Dir(path)
+					SVGpath := carpeta + "/bitacoras.svg"
+
+					if runtime.GOOS == "windows" {
+						cmd := exec.Command("dot", extT, "-o", path, "codigo9.dot")
+						cmd.Run()
+						cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo9.dot")
+						cmd2.Run()
+					} else {
+						cmd := exec.Command("dot", extT, "-o", path, "codigo9.dot")
+						cmd.Run()
+						cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo9.dot")
+						cmd2.Run()
+					}
+
+					color.Print("@{!m}El reporte@{!y} BITACORA @{!m}fue creado con éxito\n")
+
+				} else {
+					color.Println("@{!r} No hay ninguna bitácora en el sistema LWH.")
+				}
+
+			} else {
+				color.Println("@{!r} La partición indicada no ha sido formateada.")
+			}
+
+			fileMBR.Close()
+
+		}
+
+	} else {
+		color.Println("@{!r}El reporte BITACORA solo puede generar archivos con extensión .png, .jpg ó .pdf.")
 	}
 
 }
@@ -1822,6 +2120,10 @@ func ReporteTreeFile(path string, ruta string, id string) {
 					}
 
 					if SB1.MontajesCount > 0 {
+
+						if ReporteExitoso := EscribirTreeFile(fileMBR, &SB1, extension, path, PathAux, ruta); ReporteExitoso {
+							color.Print("@{!m}El reporte@{!y} TREE_COMPLETE @{!m}fue creado con éxito\n")
+						}
 
 					} else {
 						color.Println("@{!r} La partición indicada no ha sido formateada.")

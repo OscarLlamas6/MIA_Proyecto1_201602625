@@ -390,3 +390,85 @@ func GenerarBloque(NoBloque int, Bloqueaux *estructuras.BloqueDatos) string {
 	return cadena
 
 }
+
+//GenerarBitacora devuelve una bitacora seteada en formato string
+func GenerarBitacora(NoBitacora int, BitacoraAux *estructuras.Bitacora) string {
+
+	NumeroBitacora := NoBitacora + 1
+
+	n := bytes.Index(BitacoraAux.Operacion[:], []byte{0})
+	if n == -1 {
+		n = len(BitacoraAux.Operacion)
+	}
+	Operacion := string(BitacoraAux.Operacion[:n])
+
+	n = bytes.Index(BitacoraAux.Path[:], []byte{0})
+	if n == -1 {
+		n = len(BitacoraAux.Path)
+	}
+	Path := string(BitacoraAux.Path[:n])
+
+	n = bytes.Index(BitacoraAux.Contenido[:], []byte{0})
+	if n == -1 {
+		n = len(BitacoraAux.Contenido)
+	}
+	Contenido := string(BitacoraAux.Contenido[:n])
+
+	if n == 0 {
+		Contenido = "-"
+	}
+
+	n = bytes.Index(BitacoraAux.Fecha[:], []byte{0})
+	if n == -1 {
+		n = len(BitacoraAux.Fecha)
+	}
+	Fecha := string(BitacoraAux.Fecha[:n])
+
+	ValorTipo := "1"
+	if BitacoraAux.Tipo != 1 {
+		ValorTipo = "0"
+	}
+
+	ValorSize := "-"
+	if BitacoraAux.Size != -1 {
+		ValorSize = fmt.Sprint(BitacoraAux.Size)
+	}
+
+	cadena := fmt.Sprintf(`B%v [label=<
+	<TABLE BORDER="1"  cellpadding="2"   CELLBORDER="1" CELLSPACING="4" BGCOLOR="blue4" color = 'black'>            
+   	<TR> 
+	   <TD bgcolor='purple' colspan="2"><font color='white' point-size='13'>Bitacora %v </font></TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Operación </TD>
+	   <TD  bgcolor='yellow'> %v </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Tipo </TD>
+	   <TD  bgcolor='yellow' > %v </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Path </TD>
+	   <TD  bgcolor='yellow' > %v </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Contenido </TD>
+	   <TD  bgcolor='yellow' > %v </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Fecha Log</TD>
+	   <TD  bgcolor='yellow' > %v </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Size</TD>
+	   <TD  bgcolor='yellow' > %v </TD>
+   	</TR>
+
+	</TABLE>
+	>];
+	
+	`, NoBitacora, NumeroBitacora, Operacion, ValorTipo, Path, Contenido, Fecha, ValorSize)
+
+	return cadena
+
+}
