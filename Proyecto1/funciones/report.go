@@ -49,6 +49,8 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteTreeComplete(path, ruta, id)
 				} else if strings.ToLower(nombre) == "tree_directorio" {
 					ReporteTreeDirectorio(path, ruta, id)
+				} else if strings.ToLower(nombre) == "tree_file" {
+					ReporteTreeFile(path, ruta, id)
 				}
 			} else {
 				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
@@ -67,14 +69,14 @@ func ReporteMBR(path string, ruta string, id string) {
 
 	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
 
-		file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+		file, err := os.OpenFile("codigo3.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
 		if err != nil {
 			fmt.Println(err)
 			file.Close()
 			return
 		}
 		// Change permissions Linux.
-		err = os.Chmod("codigo.dot", 0666)
+		err = os.Chmod("codigo3.dot", 0666)
 		if err != nil {
 			fmt.Println(err)
 			file.Close()
@@ -156,11 +158,11 @@ func ReporteMBR(path string, ruta string, id string) {
 		}
 
 		if runtime.GOOS == "windows" {
-			cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Windows example, its tested
+			cmd := exec.Command("dot", extT, "-o", path, "codigo3.dot") //Windows example, its tested
 			//cmd.Stdout = os.Stdout
 			cmd.Run()
 		} else {
-			cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Linux example, its tested
+			cmd := exec.Command("dot", extT, "-o", path, "codigo3.dot") //Linux example, its tested
 			//cmd.Stdout = os.Stdout
 			cmd.Run()
 		}
@@ -180,14 +182,14 @@ func ReporteDisk(path string, ruta string, id string) {
 
 	if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
 
-		file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+		file, err := os.OpenFile("codigo4.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
 		if err != nil {
 			fmt.Println(err)
 			file.Close()
 			return
 		}
 		// Change permissions Linux.
-		err = os.Chmod("codigo.dot", 0666)
+		err = os.Chmod("codigo4.dot", 0666)
 		if err != nil {
 			fmt.Println(err)
 			file.Close()
@@ -413,11 +415,11 @@ func ReporteDisk(path string, ruta string, id string) {
 		}
 
 		if runtime.GOOS == "windows" {
-			cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Windows example, its tested
+			cmd := exec.Command("dot", extT, "-o", path, "codigo4.dot") //Windows example, its tested
 			//cmd.Stdout = os.Stdout
 			cmd.Run()
 		} else {
-			cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Linux example, its tested
+			cmd := exec.Command("dot", extT, "-o", path, "codigo4.dot") //Linux example, its tested
 			//cmd.Stdout = os.Stdout
 			cmd.Run()
 		}
@@ -473,14 +475,14 @@ func ReporteSB(path string, ruta string, id string) {
 
 			if SB1.MontajesCount > 0 {
 
-				file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				file, err := os.OpenFile("codigo6.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
 				if err != nil {
 					fmt.Println(err)
 					file.Close()
 					return
 				}
 				// Change permissions Linux.
-				err = os.Chmod("codigo.dot", 0666)
+				err = os.Chmod("codigo6.dot", 0666)
 				if err != nil {
 					fmt.Println(err)
 					file.Close()
@@ -510,6 +512,13 @@ func ReporteSB(path string, ruta string, id string) {
 				fmt.Fprintf(w, "   <tr><td>Total Inodos</td><td>%v</td></tr>\n", SB1.TotalInodos)
 				fmt.Fprintf(w, "   <tr><td>Total Bloques</td><td>%v</td></tr>\n", SB1.TotalBloques)
 				fmt.Fprintf(w, "   <tr><td>Total Bitacoras</td><td>%v</td></tr>\n", SB1.TotalBitacoras)
+
+				fmt.Fprintf(w, "   <tr><td>Contador AVDs</td><td>%v</td></tr>\n", int(SB1.TotalAVDS-SB1.FreeAVDS))
+				fmt.Fprintf(w, "   <tr><td>Contador DDs</td><td>%v</td></tr>\n", int(SB1.TotalDDS-SB1.FreeDDS))
+				fmt.Fprintf(w, "   <tr><td>Contador Inodos</td><td>%v</td></tr>\n", int(SB1.TotalInodos-SB1.FreeInodos))
+				fmt.Fprintf(w, "   <tr><td>Contador Bloques</td><td>%v</td></tr>\n", int(SB1.TotalBloques-SB1.FreeBloques))
+				fmt.Fprintf(w, "   <tr><td>Contador Bitacoras</td><td>%v</td></tr>\n", int(SB1.TotalBitacoras-SB1.FreeBitacoras))
+
 				fmt.Fprintf(w, "   <tr><td>Free AVDs</td><td>%v</td></tr>\n", SB1.FreeAVDS)
 				fmt.Fprintf(w, "   <tr><td>Free DDs</td><td>%v</td></tr>\n", SB1.FreeDDS)
 				fmt.Fprintf(w, "   <tr><td>Free Inodos</td><td>%v</td></tr>\n", SB1.FreeInodos)
@@ -571,11 +580,11 @@ func ReporteSB(path string, ruta string, id string) {
 				}
 
 				if runtime.GOOS == "windows" {
-					cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Windows example, its tested
+					cmd := exec.Command("dot", extT, "-o", path, "codigo6.dot") //Windows example, its tested
 					//cmd.Stdout = os.Stdout
 					cmd.Run()
 				} else {
-					cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Linux example, its tested
+					cmd := exec.Command("dot", extT, "-o", path, "codigo6.dot") //Linux example, its tested
 					//cmd.Stdout = os.Stdout
 					cmd.Run()
 				}
@@ -612,14 +621,14 @@ func ReporteSB(path string, ruta string, id string) {
 			fileMBR.Close()
 			if SB1.MontajesCount > 0 {
 
-				file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+				file, err := os.OpenFile("codigo6.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
 				if err != nil {
 					fmt.Println(err)
 					file.Close()
 					return
 				}
 				// Change permissions Linux.
-				err = os.Chmod("codigo.dot", 0666)
+				err = os.Chmod("codigo6.dot", 0666)
 				if err != nil {
 					fmt.Println(err)
 					file.Close()
@@ -646,6 +655,13 @@ func ReporteSB(path string, ruta string, id string) {
 				fmt.Fprintf(w, "   <tr><td>Total Inodos</td><td>%v</td></tr>\n", SB1.TotalInodos)
 				fmt.Fprintf(w, "   <tr><td>Total Bloques</td><td>%v</td></tr>\n", SB1.TotalBloques)
 				fmt.Fprintf(w, "   <tr><td>Total Bitacoras</td><td>%v</td></tr>\n", SB1.TotalBitacoras)
+
+				fmt.Fprintf(w, "   <tr><td>Contador AVDs</td><td>%v</td></tr>\n", int(SB1.TotalAVDS-SB1.FreeAVDS))
+				fmt.Fprintf(w, "   <tr><td>Contador DDs</td><td>%v</td></tr>\n", int(SB1.TotalDDS-SB1.FreeDDS))
+				fmt.Fprintf(w, "   <tr><td>Contador Inodos</td><td>%v</td></tr>\n", int(SB1.TotalInodos-SB1.FreeInodos))
+				fmt.Fprintf(w, "   <tr><td>Contador Bloques</td><td>%v</td></tr>\n", int(SB1.TotalBloques-SB1.FreeBloques))
+				fmt.Fprintf(w, "   <tr><td>Contador Bitacoras</td><td>%v</td></tr>\n", int(SB1.TotalBitacoras-SB1.FreeBitacoras))
+
 				fmt.Fprintf(w, "   <tr><td>Free AVDs</td><td>%v</td></tr>\n", SB1.FreeAVDS)
 				fmt.Fprintf(w, "   <tr><td>Free DDs</td><td>%v</td></tr>\n", SB1.FreeDDS)
 				fmt.Fprintf(w, "   <tr><td>Free Inodos</td><td>%v</td></tr>\n", SB1.FreeInodos)
@@ -707,11 +723,11 @@ func ReporteSB(path string, ruta string, id string) {
 				}
 
 				if runtime.GOOS == "windows" {
-					cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Windows example, its tested
+					cmd := exec.Command("dot", extT, "-o", path, "codigo6.dot") //Windows example, its tested
 					//cmd.Stdout = os.Stdout
 					cmd.Run()
 				} else {
-					cmd := exec.Command("dot", extT, "-o", path, "codigo.dot") //Linux example, its tested
+					cmd := exec.Command("dot", extT, "-o", path, "codigo6.dot") //Linux example, its tested
 					//cmd.Stdout = os.Stdout
 					cmd.Run()
 				}
@@ -860,7 +876,7 @@ func ReporteTreeComplete(path string, ruta string, id string) {
 //EscribirTreeComplete genera el reporte TreeComplete al recibir la AVD de la raiz
 func EscribirTreeComplete(MBRfile *os.File, AVDroot *estructuras.AVD, extension string, path string) {
 
-	file, err := os.OpenFile("codigo.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+	file, err := os.OpenFile("codigo7.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
 	if err != nil {
 		fmt.Println(err)
 		file.Close()
@@ -868,7 +884,7 @@ func EscribirTreeComplete(MBRfile *os.File, AVDroot *estructuras.AVD, extension 
 	}
 
 	// Change permissions Linux.
-	err = os.Chmod("codigo.dot", 0666)
+	err = os.Chmod("codigo7.dot", 0666)
 	if err != nil {
 		fmt.Println(err)
 		file.Close()
@@ -922,14 +938,14 @@ func EscribirTreeComplete(MBRfile *os.File, AVDroot *estructuras.AVD, extension 
 	SVGpath := carpeta + "/treecomplete.svg"
 
 	if runtime.GOOS == "windows" {
-		cmd := exec.Command("dot", extT, "-o", path, "codigo.dot")
+		cmd := exec.Command("dot", extT, "-o", path, "codigo7.dot")
 		cmd.Run()
-		cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo.dot")
+		cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo7.dot")
 		cmd2.Run()
 	} else {
-		cmd := exec.Command("dot", extT, "-o", path, "codigo.dot")
+		cmd := exec.Command("dot", extT, "-o", path, "codigo7.dot")
 		cmd.Run()
-		cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo.dot")
+		cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo7.dot")
 		cmd2.Run()
 	}
 
@@ -1361,6 +1377,94 @@ func ReporteTreeDirectorio(path string, ruta string, id string) {
 
 					if SB1.MontajesCount > 0 {
 
+						//En esta parte debemos ir recorriendo la ruta que recibimos como parámetro
+
+						//NOS POSICIONAMOS DONDE EMPIEZA EL STRCUT DE LA CARPETA ROOT (primer struct AVD)
+						ApuntadorAVD := SB1.InicioAVDS
+						//CREAMOS UN STRUCT TEMPORAL
+						AVDAux := estructuras.AVD{}
+						SizeAVD := int(unsafe.Sizeof(AVDAux))
+						fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+						AnteriorData := leerBytes(fileMBR, int(SizeAVD))
+						buffer2 := bytes.NewBuffer(AnteriorData)
+						err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+						if err != nil {
+							fileMBR.Close()
+							fmt.Println(err)
+							return
+						}
+
+						var NombreAnterior [20]byte
+						copy(NombreAnterior[:], AVDAux.NombreDir[:])
+						//Vamos a comparar Padres e Hijos
+						carpetas := strings.Split(ruta, "/")
+						i := 1
+						PathCorrecto := true
+
+						for i < len(carpetas)-1 {
+
+							if TieneSub, ApuntadorSiguiente := ExisteSub(carpetas[i], int(ApuntadorAVD), PathAux); TieneSub {
+
+								//Si entramos a esta parte, significa que el padre si contiene al hijo (subdirectorio)
+								//El hijo sería otro padre en el path o directamente será el padre de la carpeta que queremos crear
+								//Por lo tanto leeremos otro AVD con el resultado de "APuntadorSiguiente" y seguiremos.
+
+								ApuntadorAVD = int32(ApuntadorSiguiente)
+								fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+								AnteriorData = leerBytes(fileMBR, int(SizeAVD))
+								buffer2 = bytes.NewBuffer(AnteriorData)
+								err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+								if err != nil {
+									fileMBR.Close()
+									fmt.Println(err)
+									return
+								}
+								copy(NombreAnterior[:], AVDAux.NombreDir[:])
+								i++
+								PathCorrecto = true
+
+							} else {
+								PathCorrecto = false
+								break
+							}
+						}
+
+						if PathCorrecto {
+
+							if ruta != "/" {
+								if YaExiste, ApuntadorSiguiente := ExisteSub(carpetas[len(carpetas)-1], int(ApuntadorAVD), PathAux); YaExiste {
+
+									ApuntadorAVD = int32(ApuntadorSiguiente)
+									fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+									AnteriorData = leerBytes(fileMBR, int(SizeAVD))
+									buffer2 = bytes.NewBuffer(AnteriorData)
+									err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+									if err != nil {
+										fileMBR.Close()
+										fmt.Println(err)
+										return
+									}
+
+									EscribirTreeDirectorio(fileMBR, &AVDAux, extension, path)
+
+									color.Print("@{!m}El reporte@{!y} TREE_DIRECTORIO @{!m}fue creado con éxito\n")
+
+								} else {
+									color.Printf("@{!r}La carpeta @{!y}%v @{!r}no existe.\n", carpetas[len(carpetas)-1])
+								}
+							} else {
+
+								EscribirTreeDirectorio(fileMBR, &AVDAux, extension, path)
+
+								color.Print("@{!m}El reporte@{!y} TREE_DIRECTORIO @{!m}fue creado con éxito\n")
+							}
+
+						} else {
+							color.Println("@{!r} Error, una o más carpetas padre no existen.")
+						}
+
+						/////////////////////////////////////////////////////////////////////////////
+
 					} else {
 						color.Println("@{!r} La partición indicada no ha sido formateada.")
 					}
@@ -1632,6 +1736,436 @@ func EscribirDDRecursivo2(file *os.File, DDaux *estructuras.DD, NoDD int, carpet
 
 		EscribirDDRecursivo2(file, &DDExt, contadorDD, carpeta)
 	}
+
+}
+
+//ReporteTreeFile genera el reporte de un archivo
+func ReporteTreeFile(path string, ruta string, id string) {
+
+	if ruta != "" {
+
+		if strings.HasPrefix(ruta, "/") {
+
+			extension := filepath.Ext(path)
+
+			if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
+
+				NameAux, PathAux := GetDatosPart(id)
+
+				if Existe, Indice := ExisteParticion(PathAux, NameAux); Existe {
+
+					//LEER Y RECORRER EL MBR
+					fileMBR, err2 := os.Open(PathAux)
+					if err2 != nil { //validar que no sea nulo.
+						panic(err2)
+					}
+
+					Disco1 := estructuras.MBR{}
+					DiskSize := int(unsafe.Sizeof(Disco1))
+					DiskData := leerBytes(fileMBR, DiskSize)
+					buffer := bytes.NewBuffer(DiskData)
+					err := binary.Read(buffer, binary.BigEndian, &Disco1)
+					if err != nil {
+						fileMBR.Close()
+						fmt.Println(err)
+						return
+					}
+
+					//LEER EL SUPERBLOQUE
+					InicioParticion := Disco1.Mpartitions[Indice].Pstart
+					fileMBR.Seek(int64(InicioParticion+1), 0)
+					SB1 := estructuras.Superblock{}
+					SBsize := int(unsafe.Sizeof(SB1))
+					SBData := leerBytes(fileMBR, SBsize)
+					buffer2 := bytes.NewBuffer(SBData)
+					err = binary.Read(buffer2, binary.BigEndian, &SB1)
+					if err != nil {
+						fileMBR.Close()
+						fmt.Println(err)
+						return
+					}
+
+					if SB1.MontajesCount > 0 {
+
+						if ReporteExitoso := EscribirTreeFile(fileMBR, &SB1, extension, path, PathAux, ruta); ReporteExitoso {
+							color.Print("@{!m}El reporte@{!y} TREE_COMPLETE @{!m}fue creado con éxito\n")
+						}
+
+					} else {
+						color.Println("@{!r} La partición indicada no ha sido formateada.")
+					}
+
+					fileMBR.Close()
+
+				} else if ExisteL, IndiceL := ExisteParticionLogica(PathAux, NameAux); ExisteL {
+
+					fileMBR, err := os.Open(PathAux)
+					if err != nil { //validar que no sea nulo.
+						panic(err)
+					}
+
+					EBRAux := estructuras.EBR{}
+					EBRSize := int(unsafe.Sizeof(EBRAux))
+
+					//LEER EL SUPERBLOQUE
+					InicioParticion := IndiceL + EBRSize
+					fileMBR.Seek(int64(InicioParticion+1), 0)
+					SB1 := estructuras.Superblock{}
+					SBsize := int(unsafe.Sizeof(SB1))
+					SBData := leerBytes(fileMBR, SBsize)
+					buffer2 := bytes.NewBuffer(SBData)
+					err = binary.Read(buffer2, binary.BigEndian, &SB1)
+					if err != nil {
+						fileMBR.Close()
+						fmt.Println(err)
+						return
+					}
+
+					if SB1.MontajesCount > 0 {
+
+					} else {
+						color.Println("@{!r} La partición indicada no ha sido formateada.")
+					}
+
+					fileMBR.Close()
+
+				}
+
+			} else {
+				color.Println("@{!r}El reporte TREE_FILE solo puede generar archivos con extensión .png, .jpg ó .pdf.")
+			}
+
+		} else {
+			color.Println("@{!r}Ruta incorrecta, debe iniciar con @{!y}/")
+		}
+
+	} else {
+		color.Println("@{!r}Faltan parámetros obligatorios para el reporte TREE_FILE.")
+	}
+}
+
+//EscribirTreeFile escribe el archivo para tree_file
+func EscribirTreeFile(fileMBR *os.File, SB1 *estructuras.Superblock, extension string, path string, PathAux string, ruta string) bool {
+
+	ExisteArchivo := true
+
+	file, err := os.OpenFile("codigo8.dot", os.O_CREATE|os.O_RDWR, 0666) //Crea un nuevo archivo
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+		return false
+	}
+
+	// Change permissions Linux.
+	err = os.Chmod("codigo8.dot", 0666)
+	if err != nil {
+		fmt.Println(err)
+		file.Close()
+		return false
+	}
+
+	file.Truncate(0)
+	file.Seek(0, 0)
+
+	w := bufio.NewWriter(file)
+
+	fmt.Fprint(w, `digraph Tree {
+		node [shape=plaintext];
+		rankdir =LR;
+		`)
+
+	//////// SETEAMOS VARIABLES A CERO ////////////////////////////
+
+	contadorAVD = 0
+	contadorDD = 0
+	contadorInodo = 0
+	contadorBloque = 0
+	cadenaArchivo = ""
+
+	///////// AQUI COMENZAMOS A RECORRER TODO EL SISTEMA LWH /////////////////////////////////
+
+	//En esta parte debemos ir recorriendo la ruta que recibimos como parámetro
+
+	//NOS POSICIONAMOS DONDE EMPIEZA EL STRCUT DE LA CARPETA ROOT (primer struct AVD)
+	ApuntadorAVD := SB1.InicioAVDS
+	//CREAMOS UN STRUCT TEMPORAL
+	AVDAux := estructuras.AVD{}
+	SizeAVD := int(unsafe.Sizeof(AVDAux))
+	fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+	AnteriorData := leerBytes(fileMBR, int(SizeAVD))
+	buffer2 := bytes.NewBuffer(AnteriorData)
+	err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+	if err != nil {
+		fileMBR.Close()
+		fmt.Println(err)
+		return false
+	}
+
+	cadenaArchivo += GenerarAVD(contadorAVD, &AVDAux)
+	contadorAVD++
+
+	//Vamos a comparar Padres e Hijos
+	carpetas := strings.Split(ruta, "/")
+	i := 1
+
+	PathCorrecto := true
+	NoAVD := 0
+	for i < len(carpetas)-1 {
+
+		Continuar := true
+		//Recorremos el struct y si el apuntador indirecto a punta a otro AVD tambien lo recorreremos en caso que no se encuentre
+		//el directorio
+		for Continuar {
+			//Iteramos en las 6 posiciones del arreglo de subdirectoios (apuntadores)
+			for x := 0; x < 6; x++ {
+				//Validamos que el apuntador si esté apuntando a algo
+				if AVDAux.ApuntadorSubs[x] > 0 {
+					//Con el valor del apuntador leemos un struct AVD
+					AVDHijo := estructuras.AVD{}
+					fileMBR.Seek(int64(AVDAux.ApuntadorSubs[x]+int32(1)), 0)
+					HijoData := leerBytes(fileMBR, int(SizeAVD))
+					buffer := bytes.NewBuffer(HijoData)
+					err = binary.Read(buffer, binary.BigEndian, &AVDHijo)
+					if err != nil {
+						fileMBR.Close()
+						fmt.Println(err)
+						return false
+					}
+					//Comparamos el nombre del AVD leido con el nombre del directorio que queremos verificar si existe
+					//si existe el directorio retornamos true y el byte donde está dicho AVD
+					var chars [20]byte
+					copy(chars[:], carpetas[i])
+
+					if string(AVDHijo.NombreDir[:]) == string(chars[:]) {
+
+						cadenaArchivo += fmt.Sprintf(`AVD%v:%v->AVD%v
+			
+						`, NoAVD, x, contadorAVD)
+
+						cadenaArchivo += GenerarAVD(contadorAVD, &AVDHijo)
+						contadorAVD++
+						NoAVD++
+
+						ApuntadorAVD = int32(AVDAux.ApuntadorSubs[x])
+						fileMBR.Seek(int64(ApuntadorAVD+1), 0)
+						AnteriorData = leerBytes(fileMBR, int(SizeAVD))
+						buffer2 = bytes.NewBuffer(AnteriorData)
+						err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+						if err != nil {
+							fileMBR.Close()
+							fmt.Println(err)
+							return false
+						}
+
+						i++
+						PathCorrecto = true
+						Continuar = false
+						break
+					}
+				}
+
+			}
+
+			if Continuar == false {
+				continue
+			}
+
+			//Si el directorio no está en el arreglo de apuntadores directos
+			//verificamos si el AVD actual apunta hacia otro AVD con otros 6 apuntadores
+			if AVDAux.ApuntadorAVD > 0 {
+
+				cadenaArchivo += fmt.Sprintf(`AVD%v:7->AVD%v
+
+				`, NoAVD, contadorAVD)
+
+				//Leemos el AVD (que se considera contiguo)
+				fileMBR.Seek(int64(AVDAux.ApuntadorAVD+int32(1)), 0)
+				AnteriorData = leerBytes(fileMBR, int(SizeAVD))
+				buffer2 := bytes.NewBuffer(AnteriorData)
+				err = binary.Read(buffer2, binary.BigEndian, &AVDAux)
+				if err != nil {
+					fileMBR.Close()
+					fmt.Println(err)
+					return false
+				}
+
+				cadenaArchivo += GenerarAVD(contadorAVD, &AVDAux)
+				contadorAVD++
+				NoAVD++
+
+			} else {
+				//Si ya no apunta a otro AVD y llegamos a esta parte, cancelamos el ciclo FOR
+				Continuar = false
+				PathCorrecto = false
+				break
+			}
+
+		}
+
+		if PathCorrecto == false {
+			break
+		}
+
+	}
+
+	if PathCorrecto {
+
+		NoDD := 0
+
+		cadenaArchivo += fmt.Sprintf(`AVD%v:6->DD%v
+
+			`, NoAVD, contadorDD)
+
+		//AHORA DEBEMOS LEER EL DETALLE DIRECTORIO DE DICHO AVD
+		DDAux := estructuras.DD{}
+		PosicionDD := AVDAux.ApuntadorDD
+		SizeDD := int(unsafe.Sizeof(DDAux))
+		fileMBR.Seek(int64(PosicionDD+1), 0)
+		DDData := leerBytes(fileMBR, int(SizeDD))
+		bufferDD := bytes.NewBuffer(DDData)
+		err = binary.Read(bufferDD, binary.BigEndian, &DDAux)
+		if err != nil {
+			fileMBR.Close()
+			fmt.Println(err)
+			return false
+		}
+
+		n := bytes.Index(AVDAux.NombreDir[:], []byte{0})
+		if n == -1 {
+			n = len(AVDAux.NombreDir)
+		}
+		folder := string(AVDAux.NombreDir[:n])
+
+		cadenaArchivo += GenerarDD(NoDD, &DDAux, folder)
+		contadorDD++
+
+		Continuar := true
+		//Recorremos el struct DD, y si el apuntador indirecto a apunta a otro DD tambien lo recorremos
+		//en caso que no se encuentre el archivo
+		for Continuar {
+			//Iteramos en las 5 posiciones del arreglo de archivos que tiene el DD
+			for i := 0; i < 5; i++ {
+				//Validamos que el apuntador al inodo si esté apuntando a algo
+				if DDAux.DDFiles[i].ApuntadorInodo > 0 {
+					//Comparamos el nombre del archivo con el nombre del archivo que queremos verificar si existe
+					//si existe el archivo retornamos true
+					var chars [20]byte
+					copy(chars[:], carpetas[len(carpetas)-1])
+
+					if string(DDAux.DDFiles[i].Name[:]) == string(chars[:]) {
+
+						//Con el valor del apuntador leemos un struct Inodo
+						InodoAux := estructuras.Inodo{}
+						fileMBR.Seek(int64(DDAux.DDFiles[i].ApuntadorInodo+int32(1)), 0)
+						SizeInodo := int(unsafe.Sizeof(InodoAux))
+						InodoData := leerBytes(fileMBR, int(SizeInodo))
+						buffer := bytes.NewBuffer(InodoData)
+						err := binary.Read(buffer, binary.BigEndian, &InodoAux)
+						if err != nil {
+							fmt.Println(err)
+							return false
+						}
+
+						cadenaArchivo += fmt.Sprintf(`DD%v:%v->Inodo%v
+			
+						`, NoDD, i, contadorInodo)
+
+						EscribirInodoRecursivo(fileMBR, &InodoAux, contadorInodo)
+
+						Continuar = false
+						break
+
+					}
+
+				}
+
+			}
+
+			if Continuar == false {
+				continue
+			}
+
+			//Si el archivo no está en el arreglo de archivos
+			//verificamos si el DD actual apunta hacia otro DD
+
+			if DDAux.ApuntadorDD > 0 {
+
+				cadenaArchivo += fmt.Sprintf(`DD%v:5->DD%v
+	
+				`, NoDD, contadorDD)
+
+				//Leemos el DD (que se considera contiguo)
+				fileMBR.Seek(int64(DDAux.ApuntadorDD+int32(1)), 0)
+				DDData = leerBytes(fileMBR, int(SizeDD))
+				bufferDD = bytes.NewBuffer(DDData)
+				err = binary.Read(bufferDD, binary.BigEndian, &DDAux)
+				if err != nil {
+					fileMBR.Close()
+					fmt.Println(err)
+					return false
+				}
+
+				cadenaArchivo += GenerarDD(contadorDD, &DDAux, folder)
+				contadorDD++
+				NoDD++
+
+			} else {
+				//Si ya no apunta a otro DD y llegamos a esta parte, cancelamos el ciclo FOR
+				Continuar = false
+				ExisteArchivo = false
+				color.Println("@{!r} El archivo no existe.")
+				break
+			}
+		}
+
+	} else {
+		color.Println("@{!r} Error, una o más carpetas padre no existen.")
+		ExisteArchivo = false
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	fmt.Fprint(w, cadenaArchivo)
+
+	fmt.Fprint(w, `}`)
+
+	w.Flush()
+
+	file.Close()
+
+	if ExisteArchivo {
+		extT := "-T"
+
+		switch strings.ToLower(extension) {
+		case ".png":
+			extT += "png"
+		case ".pdf":
+			extT += "pdf"
+		case ".jpg":
+			extT += "jpg"
+		default:
+
+		}
+
+		carpeta := filepath.Dir(path)
+		SVGpath := carpeta + "/treefile.svg"
+
+		if runtime.GOOS == "windows" {
+			cmd := exec.Command("dot", extT, "-o", path, "codigo8.dot")
+			cmd.Run()
+			cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo8.dot")
+			cmd2.Run()
+		} else {
+			cmd := exec.Command("dot", extT, "-o", path, "codigo8.dot")
+			cmd.Run()
+			cmd2 := exec.Command("dot", "-Tsvg", "-o", SVGpath, "codigo8.dot")
+			cmd2.Run()
+		}
+
+		return true
+	}
+
+	return false
 
 }
 
