@@ -369,7 +369,7 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Creamos la bitacora para la creación de la carpeta raiz "/"
 		BitacoraAux := estructuras.Bitacora{}
 		//Seteamos el path, en este caso la primera carpeta tiene "/" como path
-		var PathChars [100]byte
+		var PathChars [300]byte
 		PathAux := "/"
 		copy(PathChars[:], PathAux)
 		copy(BitacoraAux.Path[:], PathChars[:])
@@ -400,7 +400,7 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Creamos la bitacora para la creación del archivo "/users.txt"
 		BitacoraAux2 := estructuras.Bitacora{}
 		//Seteamos el path, en este caso el archivo tiene "/users.txt"
-		var PathChars2 [100]byte
+		var PathChars2 [300]byte
 		PathAux2 := "/users.txt"
 		copy(PathChars2[:], PathAux2)
 		copy(BitacoraAux2.Path[:], PathChars2[:])

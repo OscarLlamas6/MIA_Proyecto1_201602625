@@ -23,6 +23,10 @@ func EjecutarMkdir(id string, path string, p string) {
 
 			if strings.HasPrefix(path, "/") {
 
+				if last := len(path) - 1; last >= 0 && path[last] == '/' {
+					path = path[:last]
+				}
+
 				if IDYaRegistrado(id) {
 
 					NameAux, PathAux := GetDatosPart(id)
@@ -130,6 +134,8 @@ func EjecutarMkdir(id string, path string, p string) {
 													color.Printf("@{!g}Creando carpeta @{!y}%v\n", carpetas[i])
 
 													CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[i])
+
+													//Seteando el superbloque
 													SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
 													SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
 													fileMBR.Seek(int64(InicioParticion+1), 0)
@@ -187,6 +193,42 @@ func EjecutarMkdir(id string, path string, p string) {
 
 												copy(NombreAnterior[:], AVDAux.NombreDir[:])
 												CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[len(carpetas)-1])
+
+												//Crear bitacora MKDIR
+												//Creamos la bitacora para la creación de la carpeta
+												BitacoraAux := estructuras.Bitacora{}
+												//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+												var PathChars [300]byte
+												PathAux := path
+												copy(PathChars[:], PathAux)
+												copy(BitacoraAux.Path[:], PathChars[:])
+												//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+												var OperacionChars [16]byte
+												OperacionAux := "Mkdir"
+												copy(OperacionChars[:], OperacionAux)
+												copy(BitacoraAux.Operacion[:], OperacionChars[:])
+												//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+												BitacoraAux.Tipo = 1
+												BitacoraAux.Size = -1
+												//Seteamo la fecha de creación de la bitácora
+												t := time.Now()
+												var charsTime [20]byte
+												cadena := t.Format("2006-01-02 15:04:05")
+												copy(charsTime[:], cadena)
+												copy(BitacoraAux.Fecha[:], charsTime[:])
+												//Calculamos la posicion en la particion donde debemos escribir la bitacora
+												NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+												//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+												BitacoraPos := int(SB1.InicioBitacora) + (NumeroBitacoras * int(SB1.SizeBitacora))
+												//Ahora toca escribir el struct Bitacora en su posición correspondiente
+												fileMBR.Seek(int64(BitacoraPos+1), 0)
+												bitacorap := &BitacoraAux
+												var binario8 bytes.Buffer
+												binary.Write(&binario8, binary.BigEndian, bitacorap)
+												escribirBytes(fileMBR, binario8.Bytes())
+
+												//Seteando superbloque
+												SB1.FreeBitacoras = SB1.FreeBitacoras - int32(1)
 												SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
 												SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
 												fileMBR.Seek(int64(InicioParticion+1), 0)
@@ -318,6 +360,8 @@ func EjecutarMkdir(id string, path string, p string) {
 													color.Printf("@{!g}Creando carpeta @{!y}%v\n", carpetas[i])
 
 													CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[i])
+
+													//Seteando el superbloque
 													SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
 													SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
 													fileMBR.Seek(int64(InicioParticion+1), 0)
@@ -375,6 +419,42 @@ func EjecutarMkdir(id string, path string, p string) {
 
 												copy(NombreAnterior[:], AVDAux.NombreDir[:])
 												CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[len(carpetas)-1])
+
+												//Crear bitacora MKDIR
+												//Creamos la bitacora para la creación de la carpeta
+												BitacoraAux := estructuras.Bitacora{}
+												//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+												var PathChars [300]byte
+												PathAux := path
+												copy(PathChars[:], PathAux)
+												copy(BitacoraAux.Path[:], PathChars[:])
+												//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+												var OperacionChars [16]byte
+												OperacionAux := "Mkdir"
+												copy(OperacionChars[:], OperacionAux)
+												copy(BitacoraAux.Operacion[:], OperacionChars[:])
+												//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+												BitacoraAux.Tipo = 1
+												BitacoraAux.Size = -1
+												//Seteamo la fecha de creación de la bitácora
+												t := time.Now()
+												var charsTime [20]byte
+												cadena := t.Format("2006-01-02 15:04:05")
+												copy(charsTime[:], cadena)
+												copy(BitacoraAux.Fecha[:], charsTime[:])
+												//Calculamos la posicion en la particion donde debemos escribir la bitacora
+												NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+												//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+												BitacoraPos := int(SB1.InicioBitacora) + (NumeroBitacoras * int(SB1.SizeBitacora))
+												//Ahora toca escribir el struct Bitacora en su posición correspondiente
+												fileMBR.Seek(int64(BitacoraPos+1), 0)
+												bitacorap := &BitacoraAux
+												var binario8 bytes.Buffer
+												binary.Write(&binario8, binary.BigEndian, bitacorap)
+												escribirBytes(fileMBR, binario8.Bytes())
+
+												//Seteando superbloque
+												SB1.FreeBitacoras = SB1.FreeBitacoras - int32(1)
 												SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
 												SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
 												fileMBR.Seek(int64(InicioParticion+1), 0)

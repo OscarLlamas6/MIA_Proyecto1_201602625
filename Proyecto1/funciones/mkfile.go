@@ -131,9 +131,12 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 													color.Printf("@{!g}Creando carpeta @{!y}%v\n", carpetas[i])
 
 													CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[i])
+
+													//SeteandoIndo al superbloque
 													SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
 													SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
 													fileMBR.Seek(int64(InicioParticion+1), 0)
+
 													//Reescribiendo el Superbloque
 													sb1 := &SB1
 													var binario1 bytes.Buffer
@@ -191,7 +194,87 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 													copy(NombreAnterior[:], AVDAux.NombreDir[:])
 													CrearFile(fileMBR, &SB1, int(AVDAux.ApuntadorDD), carpetas[len(carpetas)-1], Fsize, cont, size)
 
+													//Crear bitacora MKDIR
+													//Creamos la bitacora para la creación de la carpeta
+													BitacoraAux := estructuras.Bitacora{}
+													//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+													var PathChars [300]byte
+													PathAux := path
+													copy(PathChars[:], PathAux)
+													copy(BitacoraAux.Path[:], PathChars[:])
+													//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+													var OperacionChars [16]byte
+													OperacionAux := "Mkfile"
+													copy(OperacionChars[:], OperacionAux)
+													copy(BitacoraAux.Operacion[:], OperacionChars[:])
+													//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+													BitacoraAux.Tipo = 0
+
+													//////////SETEAMOS EL SIZE Y EL CONT/////////////
+
+													if Fsize == 0 {
+														BitacoraAux.Size = 0
+													} else {
+														contenido := ""
+														FileSize := 0
+
+														if cont == "" { //No hay contenido (setear el abcdario)
+
+															contenido = getNTimesabc(Fsize)
+															FileSize = Fsize
+
+														} else if size == "" && cont != "" {
+
+															contenido = cont
+															FileSize = len(contenido)
+
+														} else {
+
+															if Fsize > len(cont) { //size es mayor que el tamaño de cont, completar cont con el abcdario hasta llegar a size
+
+																FileSize = Fsize
+																contenido = cont             //contenido se le concatena el contenido enviado como parametro, que tiene un tamaño menor a size
+																r := Fsize - len(cont)       //calculamos cuantos caraceres hay que agregarle a contenido para cumplir con el size
+																contenido += getNTimesabc(r) //a contenido le enviamos los caraćteres del abcdario necesarios para llegar al size
+
+															} else if Fsize == len(cont) { //si size es igual al tamaño de cont, llenamos los bloques con cont
+
+																FileSize = Fsize
+																contenido = cont
+
+															} else if Fsize < len(cont) { //si size es menor que el tamaño de cont, cortamos cont hasta el tamaño de size
+
+																FileSize = Fsize
+																contenido = contenido[:Fsize]
+
+															}
+
+														}
+														BitacoraAux.Size = int32(FileSize)
+														var ContenidoChars [300]byte
+														copy(ContenidoChars[:], contenido)
+														copy(BitacoraAux.Contenido[:], ContenidoChars[:])
+													}
+
+													//Seteamo la fecha de creación de la bitácora
+													t := time.Now()
+													var charsTime [20]byte
+													cadena := t.Format("2006-01-02 15:04:05")
+													copy(charsTime[:], cadena)
+													copy(BitacoraAux.Fecha[:], charsTime[:])
+													//Calculamos la posicion en la particion donde debemos escribir la bitacora
+													NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+													//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+													BitacoraPos := int(SB1.InicioBitacora) + (NumeroBitacoras * int(SB1.SizeBitacora))
+													//Ahora toca escribir el struct Bitacora en su posición correspondiente
+													fileMBR.Seek(int64(BitacoraPos+1), 0)
+													bitacorap := &BitacoraAux
+													var binario8 bytes.Buffer
+													binary.Write(&binario8, binary.BigEndian, bitacorap)
+													escribirBytes(fileMBR, binario8.Bytes())
+
 													//Setear nuevas propiedades del superblock
+													SB1.FreeBitacoras = SB1.FreeBitacoras - int32(1)
 													SB1.FirstFreeInodo = SB1.InicioInodos + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapInodos), int(SB1.TotalInodos))))
 													SB1.FirstFreeBloque = SB1.InicioBloques + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapBloques), int(SB1.TotalBloques))))
 
@@ -327,10 +410,12 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 													color.Printf("@{!g}Creando carpeta @{!y}%v\n", carpetas[i])
 
 													CrearDirectorio(fileMBR, &SB1, int(ApuntadorAVD), carpetas[i])
+
+													//SeteandoIndo al superbloque
 													SB1.FirstFreeAVD = SB1.InicioAVDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapAVDS), int(SB1.TotalAVDS))))
 													SB1.FirstFreeDD = SB1.InicioDDS + (int32(GetBitmap(fileMBR, int(SB1.InicioBitMapDDS), int(SB1.TotalDDS))))
-
 													fileMBR.Seek(int64(InicioParticion+1), 0)
+
 													//Reescribiendo el Superbloque
 													sb1 := &SB1
 													var binario1 bytes.Buffer
@@ -388,7 +473,87 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 													copy(NombreAnterior[:], AVDAux.NombreDir[:])
 													CrearFile(fileMBR, &SB1, int(AVDAux.ApuntadorDD), carpetas[len(carpetas)-1], Fsize, cont, size)
 
+													//Crear bitacora MKDIR
+													//Creamos la bitacora para la creación de la carpeta
+													BitacoraAux := estructuras.Bitacora{}
+													//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+													var PathChars [300]byte
+													PathAux := path
+													copy(PathChars[:], PathAux)
+													copy(BitacoraAux.Path[:], PathChars[:])
+													//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+													var OperacionChars [16]byte
+													OperacionAux := "Mkfile"
+													copy(OperacionChars[:], OperacionAux)
+													copy(BitacoraAux.Operacion[:], OperacionChars[:])
+													//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+													BitacoraAux.Tipo = 0
+
+													//////////SETEAMOS EL SIZE Y EL CONT/////////////
+
+													if Fsize == 0 {
+														BitacoraAux.Size = 0
+													} else {
+														contenido := ""
+														FileSize := 0
+
+														if cont == "" { //No hay contenido (setear el abcdario)
+
+															contenido = getNTimesabc(Fsize)
+															FileSize = Fsize
+
+														} else if size == "" && cont != "" {
+
+															contenido = cont
+															FileSize = len(contenido)
+
+														} else {
+
+															if Fsize > len(cont) { //size es mayor que el tamaño de cont, completar cont con el abcdario hasta llegar a size
+
+																FileSize = Fsize
+																contenido = cont             //contenido se le concatena el contenido enviado como parametro, que tiene un tamaño menor a size
+																r := Fsize - len(cont)       //calculamos cuantos caraceres hay que agregarle a contenido para cumplir con el size
+																contenido += getNTimesabc(r) //a contenido le enviamos los caraćteres del abcdario necesarios para llegar al size
+
+															} else if Fsize == len(cont) { //si size es igual al tamaño de cont, llenamos los bloques con cont
+
+																FileSize = Fsize
+																contenido = cont
+
+															} else if Fsize < len(cont) { //si size es menor que el tamaño de cont, cortamos cont hasta el tamaño de size
+
+																FileSize = Fsize
+																contenido = contenido[:Fsize]
+
+															}
+
+														}
+														BitacoraAux.Size = int32(FileSize)
+														var ContenidoChars [300]byte
+														copy(ContenidoChars[:], contenido)
+														copy(BitacoraAux.Contenido[:], ContenidoChars[:])
+													}
+
+													//Seteamo la fecha de creación de la bitácora
+													t := time.Now()
+													var charsTime [20]byte
+													cadena := t.Format("2006-01-02 15:04:05")
+													copy(charsTime[:], cadena)
+													copy(BitacoraAux.Fecha[:], charsTime[:])
+													//Calculamos la posicion en la particion donde debemos escribir la bitacora
+													NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+													//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+													BitacoraPos := int(SB1.InicioBitacora) + (NumeroBitacoras * int(SB1.SizeBitacora))
+													//Ahora toca escribir el struct Bitacora en su posición correspondiente
+													fileMBR.Seek(int64(BitacoraPos+1), 0)
+													bitacorap := &BitacoraAux
+													var binario8 bytes.Buffer
+													binary.Write(&binario8, binary.BigEndian, bitacorap)
+													escribirBytes(fileMBR, binario8.Bytes())
+
 													//Setear nuevas propiedades del superblock
+													SB1.FreeBitacoras = SB1.FreeBitacoras - int32(1)
 													SB1.FirstFreeInodo = SB1.InicioInodos + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapInodos), int(SB1.TotalInodos))))
 													SB1.FirstFreeBloque = SB1.InicioBloques + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapBloques), int(SB1.TotalBloques))))
 
@@ -564,7 +729,7 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 	var ArrayGrupo [20]byte
 	nombreGrupo := idGrupo
 	copy(ArrayGrupo[:], nombreGrupo)
-	copy(newInodo.Proper[:], ArrayGrupo[:])
+	copy(newInodo.Grupo[:], ArrayGrupo[:])
 	newInodo.NumeroInodo = int32(int32(sb.TotalInodos)-int32(sb.FreeInodos)) + 1
 	newInodo.PermisoU = 6
 	newInodo.PermisoG = 6
@@ -864,7 +1029,7 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 					var ArrayGrupo [20]byte
 					nombreGrupo = idGrupo
 					copy(ArrayGrupo[:], nombreGrupo)
-					copy(newInodo.Proper[:], ArrayGrupo[:])
+					copy(newInodo.Grupo[:], ArrayGrupo[:])
 					newInodo.NumeroInodo = int32(int32(sb.TotalInodos)-int32(sb.FreeInodos)) + 1
 					newInodo.PermisoU = 6
 					newInodo.PermisoG = 6
