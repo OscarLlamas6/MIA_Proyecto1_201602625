@@ -2086,7 +2086,7 @@ func ReporteTreeFile(path string, ruta string, id string) {
 					if SB1.MontajesCount > 0 {
 
 						if ReporteExitoso := EscribirTreeFile(fileMBR, &SB1, extension, path, PathAux, ruta); ReporteExitoso {
-							color.Print("@{!m}El reporte@{!y} TREE_COMPLETE @{!m}fue creado con éxito\n")
+							color.Print("@{!m}El reporte@{!y} TREE_FILE @{!m}fue creado con éxito\n")
 						}
 
 					} else {
@@ -2122,7 +2122,7 @@ func ReporteTreeFile(path string, ruta string, id string) {
 					if SB1.MontajesCount > 0 {
 
 						if ReporteExitoso := EscribirTreeFile(fileMBR, &SB1, extension, path, PathAux, ruta); ReporteExitoso {
-							color.Print("@{!m}El reporte@{!y} TREE_COMPLETE @{!m}fue creado con éxito\n")
+							color.Print("@{!m}El reporte@{!y} TREE_FILE @{!m}fue creado con éxito\n")
 						}
 
 					} else {
