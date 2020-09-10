@@ -158,7 +158,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 
 											} else {
 												PathCorrecto = false
-												color.Printf("@{!r} El usuario @{!y}%v @{!m}no tiene permisos de escritura en la carpeta @{!y}%v.\n", idSesion, string(NombreAnterior[:]))
+												color.Printf("@{!r} El usuario @{!y}%v @{!r}no tiene permisos de escritura en la carpeta @{!y}%v.\n", idSesion, string(NombreAnterior[:]))
 												break
 											}
 

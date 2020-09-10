@@ -479,7 +479,7 @@ func EjecutarMkdir(id string, path string, p string) {
 
 										} else {
 											PathCorrecto = false
-											color.Printf("@{!r} El usuario @{!y}%v @{!m}no tiene permisos de escritura en la carpeta @{!y}%v.\n", idSesion, string(NombreAnterior[:]))
+											color.Printf("@{!r} El usuario @{!y}%v @{!r}no tiene permisos de escritura en la carpeta @{!y}%v.\n", idSesion, string(NombreAnterior[:]))
 										}
 
 									} else {
@@ -642,7 +642,7 @@ func CrearDirectorio(file *os.File, sb *estructuras.Superblock, AVDPadre int, no
 	newAVD.ApuntadorDD = int32(DDPos)
 	newAVD.PermisoU = 6
 	newAVD.PermisoG = 6
-	newAVD.PermisoG = 4
+	newAVD.PermisoO = 4
 	//Ahora toca escribir el nuevo AVD en su posición correspondiente
 	file.Seek(int64(AVDPos+1), 0)
 	avdp := &newAVD
