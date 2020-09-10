@@ -940,6 +940,7 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 			//ese 0.08 nos obliga a tomar un 3er bloque, entonces la funcion Roundf, aproximaria 2.08 a 3
 			resultado := float64(len(contenido)) / float64(25)
 			resultado = Roundf(resultado)
+			CantidadBloques := int32(resultado)
 			//esta variable nos ayudara al corrimiento de los caracteres
 			x := 0
 			indx := 0
@@ -1007,7 +1008,9 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 
 					newInodo.ApuntadorIndirecto = int32(Inodo2Pos)
 					newInodo.FileSize = int32(FileSize)
-					newInodo.NumeroBloques = int32(resultado)
+					//newInodo.NumeroBloques = int32(resultado)
+					newInodo.NumeroBloques = 4
+					CantidadBloques = CantidadBloques - 4
 
 					//Ahora toca escribir el struct Inodo en su posición correspondiente
 					file.Seek(int64(InodoPos+1), 0)
@@ -1043,7 +1046,7 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 			}
 
 			newInodo.FileSize = int32(FileSize)
-			newInodo.NumeroBloques = int32(resultado)
+			newInodo.NumeroBloques = CantidadBloques
 
 			//Ahora toca escribir el ultimo strcut Inodo creado en su posición correspondiente
 			file.Seek(int64(InodoPos+1), 0)

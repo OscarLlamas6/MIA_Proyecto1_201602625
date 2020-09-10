@@ -1,0 +1,24 @@
+digraph D {
+parent [
+ shape=plaintext
+ label=<
+<table border='1' cellborder='1'>
+ <tr>
+  <td rowspan="2" bgcolor="orange">MBR</td>
+  <td rowspan="2" bgcolor="yellow">Particion1 - Primaria</td>
+  <td rowspan="2" bgcolor="yellow">Particion2 - Primaria</td>
+  <td colspan="6" bgcolor="#0cff04">Particion3 - Extendida</td>
+  <td rowspan="2" bgcolor="yellow">Particion4 - Primaria</td>
+  <td rowspan="2" bgcolor="skyblue">Libre</td>
+ </tr>
+ <tr>
+  <td>EBR</td>
+  <td>LOGICA</td>
+  <td>EBR</td>
+  <td>LOGICA</td>
+  <td>EBR</td>
+  <td>LOGICA</td>
+ </tr>
+  </table>
+ >]
+}

@@ -1,0 +1,107 @@
+digraph Bitacoras {
+					node [shape=plaintext];
+					B0 [label=<
+	<TABLE BORDER="1"  cellpadding="2"   CELLBORDER="1" CELLSPACING="4" BGCOLOR="blue4" color = 'black'>            
+   	<TR> 
+	   <TD bgcolor='purple' colspan="2"><font color='white' point-size='13'>Bitacora 1 </font></TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Operación </TD>
+	   <TD  bgcolor='yellow'> Mkdir </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Tipo </TD>
+	   <TD  bgcolor='yellow' > 1 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Path </TD>
+	   <TD  bgcolor='yellow' > / </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Contenido </TD>
+	   <TD  bgcolor='yellow' > - </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Fecha Log</TD>
+	   <TD  bgcolor='yellow' > 2020-09-09 22:09:20 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Size</TD>
+	   <TD  bgcolor='yellow' > - </TD>
+   	</TR>
+
+	</TABLE>
+	>];
+	
+	B0->B1[style=invis]
+							
+							B1 [label=<
+	<TABLE BORDER="1"  cellpadding="2"   CELLBORDER="1" CELLSPACING="4" BGCOLOR="blue4" color = 'black'>            
+   	<TR> 
+	   <TD bgcolor='purple' colspan="2"><font color='white' point-size='13'>Bitacora 2 </font></TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Operación </TD>
+	   <TD  bgcolor='yellow'> Mkfile </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Tipo </TD>
+	   <TD  bgcolor='yellow' > 0 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Path </TD>
+	   <TD  bgcolor='yellow' > /users.txt </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Contenido </TD>
+	   <TD  bgcolor='yellow' > 1,G,root
+1,U,root,root,201602625 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Fecha Log</TD>
+	   <TD  bgcolor='yellow' > 2020-09-09 22:09:20 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Size</TD>
+	   <TD  bgcolor='yellow' > 32 </TD>
+   	</TR>
+
+	</TABLE>
+	>];
+	
+	B1->B2[style=invis]
+							
+							B2 [label=<
+	<TABLE BORDER="1"  cellpadding="2"   CELLBORDER="1" CELLSPACING="4" BGCOLOR="blue4" color = 'black'>            
+   	<TR> 
+	   <TD bgcolor='purple' colspan="2"><font color='white' point-size='13'>Bitacora 3 </font></TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Operación </TD>
+	   <TD  bgcolor='yellow'> Mkfile </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Tipo </TD>
+	   <TD  bgcolor='yellow' > 0 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Path </TD>
+	   <TD  bgcolor='yellow' > /documentos/carpeta32/a.txt </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' > Contenido </TD>
+	   <TD  bgcolor='yellow' > OscarAlfredoLlamasLemusabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Fecha Log</TD>
+	   <TD  bgcolor='yellow' > 2020-09-09 22:09:36 </TD>
+   	</TR>
+   	<TR>
+	   <TD  bgcolor='green1' >Size</TD>
+	   <TD  bgcolor='yellow' > 75 </TD>
+   	</TR>
+
+	</TABLE>
+	>];
+	
+	}
