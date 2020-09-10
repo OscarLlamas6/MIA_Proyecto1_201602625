@@ -104,7 +104,7 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 		//Seteando Superbloque
 
 		sb := estructuras.Superblock{}
-		sb.PartSize = int32(PartStart)
+		sb.PartStart = int32(PartStart)
 		sb.PartSize = int32(PartSize)
 		var chars [16]byte
 		VirtualName := filepath.Base(path)

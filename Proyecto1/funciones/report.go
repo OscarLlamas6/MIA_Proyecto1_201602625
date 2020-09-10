@@ -2550,6 +2550,8 @@ func ReporteBitmapAVD(path string, ruta string, id string) {
 				w.Flush()
 				file.Close()
 
+				color.Print("@{!m}El reporte@{!y} BM_ARBDIR@{!m}fue creado con éxito\n")
+
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
 			}
@@ -2618,6 +2620,8 @@ func ReporteBitmapAVD(path string, ruta string, id string) {
 
 				w.Flush()
 				file.Close()
+
+				color.Print("@{!m}El reporte@{!y} BM_ARBDIR@{!m}fue creado con éxito\n")
 
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
@@ -2710,6 +2714,8 @@ func ReporteBitmapDD(path string, ruta string, id string) {
 				w.Flush()
 				file.Close()
 
+				color.Print("@{!m}El reporte@{!y} BM_DETDIR@{!m}fue creado con éxito\n")
+
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
 			}
@@ -2778,6 +2784,8 @@ func ReporteBitmapDD(path string, ruta string, id string) {
 
 				w.Flush()
 				file.Close()
+
+				color.Print("@{!m}El reporte@{!y} BM_DETDIR@{!m}fue creado con éxito\n")
 
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
@@ -2870,6 +2878,8 @@ func ReporteBitmapInode(path string, ruta string, id string) {
 				w.Flush()
 				file.Close()
 
+				color.Print("@{!m}El reporte@{!y} BM_INODE@{!m}fue creado con éxito\n")
+
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
 			}
@@ -2938,6 +2948,8 @@ func ReporteBitmapInode(path string, ruta string, id string) {
 
 				w.Flush()
 				file.Close()
+
+				color.Print("@{!m}El reporte@{!y} BM_INODE@{!m}fue creado con éxito\n")
 
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
@@ -3030,6 +3042,8 @@ func ReporteBitmapBloque(path string, ruta string, id string) {
 				w.Flush()
 				file.Close()
 
+				color.Print("@{!m}El reporte@{!y} BM_BLOCK@{!m}fue creado con éxito\n")
+
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")
 			}
@@ -3098,6 +3112,8 @@ func ReporteBitmapBloque(path string, ruta string, id string) {
 
 				w.Flush()
 				file.Close()
+
+				color.Print("@{!m}El reporte@{!y} BM_BLOCK@{!m}fue creado con éxito\n")
 
 			} else {
 				color.Println("@{!r} La partición indicada no ha sido formateada.")

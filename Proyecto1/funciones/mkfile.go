@@ -613,10 +613,10 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 			}
 
 		} else {
-			color.Println("@{!r}Faltan parámetros obligatorios para la funcion MKDIR.")
+			color.Println("@{!r}Faltan parámetros obligatorios para la funcion MKFILE.")
 		}
 	} else {
-		color.Println("@{!r}Se necesita de una sesión activa para ejecutar la función MKDIR.")
+		color.Println("@{!r}Se necesita de una sesión activa para ejecutar la función MKFILE.")
 	}
 
 }
