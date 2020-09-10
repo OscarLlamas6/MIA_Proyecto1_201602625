@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 	"unsafe"
 
 	"github.com/doun/terminal/color"
@@ -332,8 +333,46 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 									binary.Write(&binario, binary.BigEndian, inodop)
 									escribirBytes(fileMBR, binario.Bytes())
 
-									//Setear nuevas propiedades del superblock
+									//Crear bitacora MKUSR
+									//Creamos la bitacora para la creación de la carpeta
+									BitacoraAux := estructuras.Bitacora{}
+									//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+									var PathChars [300]byte
+									PathAux := "users.txt"
+									copy(PathChars[:], PathAux)
+									copy(BitacoraAux.Path[:], PathChars[:])
+									//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+									var OperacionChars [16]byte
+									OperacionAux := "Mkusr"
+									copy(OperacionChars[:], OperacionAux)
+									copy(BitacoraAux.Operacion[:], OperacionChars[:])
+									//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+									BitacoraAux.Tipo = 0
+									//Setemos el contenido
+									ContenidoMkuser := name + "," + pass + "," + grupo
+									var ContenidoChars [300]byte
+									copy(ContenidoChars[:], ContenidoMkuser)
+									copy(BitacoraAux.Contenido[:], ContenidoChars[:])
+									BitacoraAux.Size = 0
+									//Seteamo la fecha de creación de la bitácora
+									t := time.Now()
+									var charsTime [20]byte
+									cadena := t.Format("2006-01-02 15:04:05")
+									copy(charsTime[:], cadena)
+									copy(BitacoraAux.Fecha[:], charsTime[:])
+									//Calculamos la posicion en la particion donde debemos escribir la bitacora
+									NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+									//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+									BitacoraPos := int(SB1.InicioBitacora) + (NumeroBitacoras * int(SB1.SizeBitacora))
+									//Ahora toca escribir el struct Bitacora en su posición correspondiente
+									fileMBR.Seek(int64(BitacoraPos+1), 0)
+									bitacorap := &BitacoraAux
+									var binario8 bytes.Buffer
+									binary.Write(&binario8, binary.BigEndian, bitacorap)
+									escribirBytes(fileMBR, binario8.Bytes())
 
+									//Setear nuevas propiedades del superblock
+									SB1.FreeBitacoras = SB1.FreeBitacoras - int32(1)
 									SB1.FirstFreeInodo = SB1.InicioInodos + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapInodos), int(SB1.TotalInodos))))
 									SB1.FirstFreeBloque = SB1.InicioBloques + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapBloques), int(SB1.TotalBloques))))
 
@@ -352,6 +391,7 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 									color.Printf("@{!m}El usuario @{!y}%v @{!m}fue creado con éxito\n", name)
 
 									////////////////////////////////////////////////////////////
+
 								} else {
 									color.Println("@{!r} La partición indicada no ha sido formateada.")
 								}
@@ -644,8 +684,46 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 									binary.Write(&binario, binary.BigEndian, inodop)
 									escribirBytes(fileMBR, binario.Bytes())
 
-									//Setear nuevas propiedades del superblock
+									//Crear bitacora MKUSR
+									//Creamos la bitacora para la creación de la carpeta
+									BitacoraAux := estructuras.Bitacora{}
+									//Seteamos el path, en este caso la primera carpeta tiene "/" como path
+									var PathChars [300]byte
+									PathAux := "users.txt"
+									copy(PathChars[:], PathAux)
+									copy(BitacoraAux.Path[:], PathChars[:])
+									//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+									var OperacionChars [16]byte
+									OperacionAux := "Mkusr"
+									copy(OperacionChars[:], OperacionAux)
+									copy(BitacoraAux.Operacion[:], OperacionChars[:])
+									//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
+									BitacoraAux.Tipo = 0
+									//Setemos el contenido
+									ContenidoMkuser := name + "," + pass + "," + grupo
+									var ContenidoChars [300]byte
+									copy(ContenidoChars[:], ContenidoMkuser)
+									copy(BitacoraAux.Contenido[:], ContenidoChars[:])
+									BitacoraAux.Size = 0
+									//Seteamo la fecha de creación de la bitácora
+									t := time.Now()
+									var charsTime [20]byte
+									cadena := t.Format("2006-01-02 15:04:05")
+									copy(charsTime[:], cadena)
+									copy(BitacoraAux.Fecha[:], charsTime[:])
+									//Calculamos la posicion en la particion donde debemos escribir la bitacora
+									NumeroBitacoras := int(SB1.TotalBitacoras - SB1.FreeBitacoras)
+									//en este caso al ser la primera bitacora ira al inicio del bloque de bitacoras
+									BitacoraPos := int(SB1.InicioBitacora) + (NumeroBitacoras * int(SB1.SizeBitacora))
+									//Ahora toca escribir el struct Bitacora en su posición correspondiente
+									fileMBR.Seek(int64(BitacoraPos+1), 0)
+									bitacorap := &BitacoraAux
+									var binario8 bytes.Buffer
+									binary.Write(&binario8, binary.BigEndian, bitacorap)
+									escribirBytes(fileMBR, binario8.Bytes())
 
+									//Setear nuevas propiedades del superblock
+									SB1.FreeBitacoras = SB1.FreeBitacoras - int32(1)
 									SB1.FirstFreeInodo = SB1.InicioInodos + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapInodos), int(SB1.TotalInodos))))
 									SB1.FirstFreeBloque = SB1.InicioBloques + (int32(GetBitmap(fileMBR, int(SB1.InicioBitmapBloques), int(SB1.TotalBloques))))
 

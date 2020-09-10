@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"unsafe"
 
 	"github.com/doun/terminal/color"
@@ -149,6 +150,26 @@ func EjecutarRecovery(id string) {
 								CadenaContenido := string(contenidoAux[:n])
 
 								EjecutarMkfile(id, CadenaPath, ValorSize, CadenaContenido, "-P")
+
+							}
+
+							var OperacionAux3 [16]byte
+							cadena3 := "Mkusr"
+							copy(OperacionAux3[:], cadena3)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux3[:]) {
+
+								n := bytes.Index(ArregloBitacoras[x].Contenido[:], []byte{0})
+								if n == -1 {
+									n = len(ArregloBitacoras[x].Contenido[:])
+								}
+								Contenido := string(ArregloBitacoras[x].Contenido[:n])
+								Atributos := strings.Split(Contenido, ",")
+								NameAux := Atributos[0]
+								PassAux := Atributos[1]
+								GrupoAux := Atributos[2]
+
+								EjecutarMkusr(NameAux, PassAux, GrupoAux, id)
 
 							}
 
