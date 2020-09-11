@@ -214,52 +214,63 @@ func EjecutarCat(id string, lista *[]string) {
 											return
 										}
 
-										Continuar2 := true
+										if sesionRoot || LecturaPropietarioFile(&InodoAux) || LecturaGrupoFile(&InodoAux) || LecturaOtrosFile(&InodoAux) {
 
-										for Continuar2 {
+											Continuar2 := true
 
-											for i := 0; i < 4; i++ {
+											for Continuar2 {
 
-												if InodoAux.ApuntadoresBloques[i] > 0 {
+												for i := 0; i < 4; i++ {
 
-													//Con el valor del apuntador leemos un struct Bloque
-													BloqueAux := estructuras.BloqueDatos{}
-													fileMBR.Seek(int64(InodoAux.ApuntadoresBloques[i]+int32(1)), 0)
-													SizeBloque := int(unsafe.Sizeof(BloqueAux))
-													BloqueData := leerBytes(fileMBR, int(SizeBloque))
-													buffer := bytes.NewBuffer(BloqueData)
-													err := binary.Read(buffer, binary.BigEndian, &BloqueAux)
+													if InodoAux.ApuntadoresBloques[i] > 0 {
+
+														//Con el valor del apuntador leemos un struct Bloque
+														BloqueAux := estructuras.BloqueDatos{}
+														fileMBR.Seek(int64(InodoAux.ApuntadoresBloques[i]+int32(1)), 0)
+														SizeBloque := int(unsafe.Sizeof(BloqueAux))
+														BloqueData := leerBytes(fileMBR, int(SizeBloque))
+														buffer := bytes.NewBuffer(BloqueData)
+														err := binary.Read(buffer, binary.BigEndian, &BloqueAux)
+														if err != nil {
+															fmt.Println(err)
+															return
+
+														}
+
+														color.Printf("@{!g}%s", string(BloqueAux.Data[:]))
+
+													}
+
+												}
+
+												if InodoAux.ApuntadorIndirecto > 0 {
+
+													//Con el valor del apuntador leemos un struct Inodo
+													InodoExt := estructuras.Inodo{}
+													fileMBR.Seek(int64(InodoAux.ApuntadorIndirecto+int32(1)), 0)
+													SizeInodo := int(unsafe.Sizeof(InodoExt))
+													ExtData := leerBytes(fileMBR, int(SizeInodo))
+													buffer := bytes.NewBuffer(ExtData)
+													err := binary.Read(buffer, binary.BigEndian, &InodoAux)
 													if err != nil {
 														fmt.Println(err)
 														return
 
 													}
 
-													color.Printf("@{!g}%s", string(BloqueAux.Data[:]))
+												} else {
+													Continuar2 = false
+												}
 
+												if Continuar2 == false {
+													break
 												}
 
 											}
 
-											if InodoAux.ApuntadorIndirecto > 0 {
-
-												//Con el valor del apuntador leemos un struct Inodo
-												InodoExt := estructuras.Inodo{}
-												fileMBR.Seek(int64(InodoAux.ApuntadorIndirecto+int32(1)), 0)
-												SizeInodo := int(unsafe.Sizeof(InodoExt))
-												ExtData := leerBytes(fileMBR, int(SizeInodo))
-												buffer := bytes.NewBuffer(ExtData)
-												err := binary.Read(buffer, binary.BigEndian, &InodoAux)
-												if err != nil {
-													fmt.Println(err)
-													return
-
-												}
-
-											} else {
-												Continuar2 = false
-											}
-
+										} else {
+											PathCorrecto = false
+											color.Printf("@{!r} El usuario @{!y}%v @{!r}no tiene permisos de lectura sobre el archivo @{!y}%v.\n", idSesion, carpetas[len(carpetas)-1])
 										}
 
 										Continuar = false
@@ -272,7 +283,7 @@ func EjecutarCat(id string, lista *[]string) {
 							}
 
 							if Continuar == false {
-								continue
+								break
 							}
 
 							//Si el archivo no está en el arreglo de archivos
@@ -491,52 +502,59 @@ func EjecutarCat(id string, lista *[]string) {
 											return
 										}
 
-										Continuar2 := true
+										if sesionRoot || LecturaPropietarioFile(&InodoAux) || LecturaGrupoFile(&InodoAux) || LecturaOtrosFile(&InodoAux) {
 
-										for Continuar2 {
+											Continuar2 := true
 
-											for i := 0; i < 4; i++ {
+											for Continuar2 {
 
-												if InodoAux.ApuntadoresBloques[i] > 0 {
+												for i := 0; i < 4; i++ {
 
-													//Con el valor del apuntador leemos un struct Bloque
-													BloqueAux := estructuras.BloqueDatos{}
-													fileMBR.Seek(int64(InodoAux.ApuntadoresBloques[i]+int32(1)), 0)
-													SizeBloque := int(unsafe.Sizeof(BloqueAux))
-													BloqueData := leerBytes(fileMBR, int(SizeBloque))
-													buffer := bytes.NewBuffer(BloqueData)
-													err := binary.Read(buffer, binary.BigEndian, &BloqueAux)
+													if InodoAux.ApuntadoresBloques[i] > 0 {
+
+														//Con el valor del apuntador leemos un struct Bloque
+														BloqueAux := estructuras.BloqueDatos{}
+														fileMBR.Seek(int64(InodoAux.ApuntadoresBloques[i]+int32(1)), 0)
+														SizeBloque := int(unsafe.Sizeof(BloqueAux))
+														BloqueData := leerBytes(fileMBR, int(SizeBloque))
+														buffer := bytes.NewBuffer(BloqueData)
+														err := binary.Read(buffer, binary.BigEndian, &BloqueAux)
+														if err != nil {
+															fmt.Println(err)
+															return
+
+														}
+
+														color.Printf("@{!g}%s", string(BloqueAux.Data[:]))
+
+													}
+
+												}
+
+												if InodoAux.ApuntadorIndirecto > 0 {
+
+													//Con el valor del apuntador leemos un struct Inodo
+													InodoExt := estructuras.Inodo{}
+													fileMBR.Seek(int64(InodoAux.ApuntadorIndirecto+int32(1)), 0)
+													SizeInodo := int(unsafe.Sizeof(InodoExt))
+													ExtData := leerBytes(fileMBR, int(SizeInodo))
+													buffer := bytes.NewBuffer(ExtData)
+													err := binary.Read(buffer, binary.BigEndian, &InodoAux)
 													if err != nil {
 														fmt.Println(err)
 														return
 
 													}
 
-													color.Printf("@{!g}%s", string(BloqueAux.Data[:]))
-
+												} else {
+													Continuar2 = false
 												}
 
 											}
 
-											if InodoAux.ApuntadorIndirecto > 0 {
-
-												//Con el valor del apuntador leemos un struct Inodo
-												InodoExt := estructuras.Inodo{}
-												fileMBR.Seek(int64(InodoAux.ApuntadorIndirecto+int32(1)), 0)
-												SizeInodo := int(unsafe.Sizeof(InodoExt))
-												ExtData := leerBytes(fileMBR, int(SizeInodo))
-												buffer := bytes.NewBuffer(ExtData)
-												err := binary.Read(buffer, binary.BigEndian, &InodoAux)
-												if err != nil {
-													fmt.Println(err)
-													return
-
-												}
-
-											} else {
-												Continuar2 = false
-											}
-
+										} else {
+											PathCorrecto = false
+											color.Printf("@{!r} El usuario @{!y}%v @{!r}no tiene permisos de lectura sobre el archivo @{!y}%v.\n", idSesion, carpetas[len(carpetas)-1])
 										}
 
 										Continuar = false
@@ -549,7 +567,7 @@ func EjecutarCat(id string, lista *[]string) {
 							}
 
 							if Continuar == false {
-								continue
+								break
 							}
 
 							//Si el archivo no está en el arreglo de archivos
@@ -596,4 +614,54 @@ func EjecutarCat(id string, lista *[]string) {
 		color.Printf("@{!r}No hay ninguna partición montada con el id: %v\n", id)
 	}
 
+}
+
+//LecturaPropietarioFile verifica si un usuario tiene permisos sobre un directorio por ser propietario
+func LecturaPropietarioFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idSesion)
+	//Verificamos si el usuario activo actualmente es el propietario, si no lo es automaticamente returnamos false
+	if string(InodoAux.Proper[:]) == string(chars[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoU == 4 || InodoAux.PermisoU == 5 || InodoAux.PermisoU == 6 || InodoAux.PermisoU == 7 {
+			return true
+		}
+	}
+
+	return false
+}
+
+//LecturaGrupoFile verifica si un usuario tiene permisos sobre un directorio por ser parte del grupo
+func LecturaGrupoFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idGrupo)
+	//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
+	if string(InodoAux.Grupo[:]) == string(chars[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoG == 4 || InodoAux.PermisoG == 5 || InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
+			return true
+		}
+	}
+
+	return false
+}
+
+//LecturaOtrosFile verifica si un usuario tiene permisos sobre un directorio por ser de la categoria "Otros"
+func LecturaOtrosFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idSesion)
+	var chars2 [20]byte
+	copy(chars2[:], idGrupo)
+	//Verificamos si el usuario activo actualmente no es propietario y tampoco parte del grupo, si lo es automaticamente retornamos false
+	if string(InodoAux.Proper[:]) != string(chars[:]) && string(InodoAux.Grupo[:]) != string(chars2[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoO == 4 || InodoAux.PermisoO == 5 || InodoAux.PermisoO == 6 || InodoAux.PermisoO == 7 {
+			return true
+		}
+	}
+
+	return false
 }
