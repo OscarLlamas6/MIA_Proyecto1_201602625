@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -17,7 +18,10 @@ func EjecutarRmDisk(path string) {
 		if strings.HasSuffix(strings.ToLower(path), ".dsk") {
 
 			if fileExists(path) {
-				color.Println("@{!yM}¿Está segur@@ que desea borrar este disco?")
+
+				fileName := filepath.Base(path)
+
+				color.Printf("@{!yM}¿Está segur@@ que desea borrar el disco %v?̣[Y/n]\n", fileName)
 
 				pedir := true
 				linea := ""

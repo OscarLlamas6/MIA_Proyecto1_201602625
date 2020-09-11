@@ -80,7 +80,7 @@ func EjecutarFDisk(size string, unit string, path string, tipo string, fit strin
 
 					if ExisteP, IndiceP := ExisteParticion(path, name); ExisteP {
 
-						color.Println("@{!yM}¿Está segur@@ que desea borrar esta partición?")
+						color.Printf("@{!yM}¿Está segur@@ que desea borrar esta partición?[Y/n]")
 
 						pedir := true
 						linea := ""

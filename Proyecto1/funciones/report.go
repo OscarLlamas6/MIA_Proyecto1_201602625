@@ -1514,6 +1514,10 @@ func ReporteTreeDirectorio(path string, ruta string, id string) {
 
 		if strings.HasPrefix(ruta, "/") {
 
+			if last := len(ruta) - 1; last >= 0 && ruta[last] == '/' {
+				ruta = ruta[:last]
+			}
+
 			extension := filepath.Ext(path)
 
 			if strings.ToLower(extension) == ".pdf" || strings.ToLower(extension) == ".jpg" || strings.ToLower(extension) == ".png" {
