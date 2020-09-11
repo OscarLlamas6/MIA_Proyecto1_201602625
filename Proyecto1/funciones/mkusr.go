@@ -388,7 +388,7 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 									var binario2 bytes.Buffer
 									binary.Write(&binario2, binary.BigEndian, sb2)
 									escribirBytes(fileMBR, binario2.Bytes())
-									color.Printf("@{!m}El usuario @{!y}%v @{!m}fue creado con éxito\n", name)
+									color.Printf("@{!m}El usuario @{!y}%v @{!m}fue creado en el grupo @{!y}%v @{!m}con éxito\n", name, grupo)
 
 									////////////////////////////////////////////////////////////
 
@@ -739,7 +739,7 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 									var binario2 bytes.Buffer
 									binary.Write(&binario2, binary.BigEndian, sb2)
 									escribirBytes(fileMBR, binario2.Bytes())
-									color.Printf("@{!m}El usuario @{!y}%v @{!m}fue creado con éxito\n", name)
+									color.Printf("@{!m}El usuario @{!y}%v @{!m}fue creado en el grupo @{!y}%v @{!m}con éxito\n", name, grupo)
 
 									////////////////////////////////////////////////////////////
 
@@ -759,7 +759,7 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 					}
 
 				} else {
-					color.Println("@{!r}	Ya hay un usuario registrado con ese nombre.")
+					color.Printf("@{!r}Ya hay un usuario registrado con el nombre @{!y}%v\n", name)
 				}
 
 			} else {

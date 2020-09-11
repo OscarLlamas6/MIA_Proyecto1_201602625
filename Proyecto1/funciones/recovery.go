@@ -173,6 +173,22 @@ func EjecutarRecovery(id string) {
 
 							}
 
+							var OperacionAux4 [16]byte
+							cadena4 := "Mkgrp"
+							copy(OperacionAux4[:], cadena4)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux4[:]) {
+
+								n := bytes.Index(ArregloBitacoras[x].Contenido[:], []byte{0})
+								if n == -1 {
+									n = len(ArregloBitacoras[x].Contenido[:])
+								}
+								Contenido := string(ArregloBitacoras[x].Contenido[:n])
+
+								EjecutarMkgrp(Contenido, id)
+
+							}
+
 						}
 						//Volvemos a abrir el Disco en esta parte del codigo para
 						//poder escribir, Superbloque, bitacoras originales y backup original
