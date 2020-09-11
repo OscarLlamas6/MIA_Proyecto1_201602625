@@ -1484,7 +1484,7 @@ func paramRen() {
 		tokenAux = nextToken()
 		if tokenCorrecto(tokenAux, "TK_ASIG") {
 			tokenAux = nextToken()
-			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_ID") {
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_ID") || tokenCorrecto(tokenAux, "TK_DIR") {
 				//SETEAR ID
 				vName = tokenAux.GetLexema()
 				otroParamRen()
