@@ -665,3 +665,53 @@ func LecturaOtrosFile(InodoAux *estructuras.Inodo) bool {
 
 	return false
 }
+
+//EscrituraPropietarioFile verifica si un usuario tiene permisos sobre un directorio por ser propietario
+func EscrituraPropietarioFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idSesion)
+	//Verificamos si el usuario activo actualmente es el propietario, si no lo es automaticamente returnamos false
+	if string(InodoAux.Proper[:]) == string(chars[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoU == 2 || InodoAux.PermisoU == 3 || InodoAux.PermisoU == 6 || InodoAux.PermisoU == 7 {
+			return true
+		}
+	}
+
+	return false
+}
+
+//EscrituraGrupoFile verifica si un usuario tiene permisos sobre un directorio por ser parte del grupo
+func EscrituraGrupoFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idGrupo)
+	//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
+	if string(InodoAux.Grupo[:]) == string(chars[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoG == 2 || InodoAux.PermisoG == 3 || InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
+			return true
+		}
+	}
+
+	return false
+}
+
+//EscrituraOtrosFile verifica si un usuario tiene permisos sobre un directorio por ser de la categoria "Otros"
+func EscrituraOtrosFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idSesion)
+	var chars2 [20]byte
+	copy(chars2[:], idGrupo)
+	//Verificamos si el usuario activo actualmente no es propietario y tampoco parte del grupo, si lo es automaticamente retornamos false
+	if string(InodoAux.Proper[:]) != string(chars[:]) && string(InodoAux.Grupo[:]) != string(chars2[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoO == 2 || InodoAux.PermisoO == 3 || InodoAux.PermisoO == 6 || InodoAux.PermisoO == 7 {
+			return true
+		}
+	}
+
+	return false
+}

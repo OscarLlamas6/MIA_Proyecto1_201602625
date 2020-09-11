@@ -83,7 +83,7 @@ func Lexico(entrada string) {
 					lexemaact += c
 				} else if c == "\"" {
 					estado = 0
-					if strings.HasSuffix(strings.ToLower(lexemaact), ".dsk") || strings.HasSuffix(strings.ToLower(lexemaact), ".mia") || strings.HasSuffix(strings.ToLower(lexemaact), ".pdf") || strings.HasSuffix(strings.ToLower(lexemaact), ".jpg") || strings.HasSuffix(strings.ToLower(lexemaact), ".txt") || strings.HasSuffix(strings.ToLower(lexemaact), ".png") {
+					if strings.HasSuffix(strings.ToLower(lexemaact), ".dsk") || strings.HasSuffix(strings.ToLower(lexemaact), ".mia") || strings.HasSuffix(strings.ToLower(lexemaact), ".pdf") || strings.HasSuffix(strings.ToLower(lexemaact), ".jpg") || strings.HasSuffix(strings.ToLower(lexemaact), ".txt") || strings.HasSuffix(strings.ToLower(lexemaact), ".png") || strings.HasSuffix(strings.ToLower(lexemaact), ".sh") {
 						newToken := estructuras.NewToken("TK_FILE", lexemaact)
 						tokens = append(tokens, newToken)
 					} else {
@@ -240,7 +240,7 @@ func Lexico(entrada string) {
 					lexemaact += c
 				} else {
 
-					if strings.HasSuffix(strings.ToLower(lexemaact), ".dsk") || strings.HasSuffix(strings.ToLower(lexemaact), ".mia") || strings.HasSuffix(strings.ToLower(lexemaact), ".pdf") || strings.HasSuffix(strings.ToLower(lexemaact), ".jpg") || strings.HasSuffix(strings.ToLower(lexemaact), ".txt") || strings.HasSuffix(strings.ToLower(lexemaact), ".png") {
+					if strings.HasSuffix(strings.ToLower(lexemaact), ".dsk") || strings.HasSuffix(strings.ToLower(lexemaact), ".mia") || strings.HasSuffix(strings.ToLower(lexemaact), ".pdf") || strings.HasSuffix(strings.ToLower(lexemaact), ".jpg") || strings.HasSuffix(strings.ToLower(lexemaact), ".txt") || strings.HasSuffix(strings.ToLower(lexemaact), ".png") || strings.HasSuffix(strings.ToLower(lexemaact), ".txt") || strings.HasSuffix(strings.ToLower(lexemaact), ".sh") {
 						newToken := estructuras.NewToken("TK_FILE", lexemaact)
 						tokens = append(tokens, newToken)
 					} else {

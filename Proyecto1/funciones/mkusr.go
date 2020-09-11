@@ -739,6 +739,7 @@ func EjecutarMkusr(name string, pass string, grupo string, id string) {
 									var binario2 bytes.Buffer
 									binary.Write(&binario2, binary.BigEndian, sb2)
 									escribirBytes(fileMBR, binario2.Bytes())
+
 									color.Printf("@{!m}El usuario @{!y}%v @{!m}fue creado en el grupo @{!y}%v @{!m}con éxito\n", name, grupo)
 
 									////////////////////////////////////////////////////////////

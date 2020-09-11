@@ -189,6 +189,32 @@ func EjecutarRecovery(id string) {
 
 							}
 
+							var OperacionAux5 [16]byte
+							cadena5 := "Ren"
+							copy(OperacionAux5[:], cadena5)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux5[:]) {
+
+								var PathAux [300]byte
+								copy(PathAux[:], ArregloBitacoras[x].Path[:])
+								n := bytes.Index(PathAux[:], []byte{0})
+								if n == -1 {
+									n = len(PathAux)
+								}
+								CadenaPath := string(PathAux[:n])
+
+								var contenidoAux [300]byte
+								copy(contenidoAux[:], ArregloBitacoras[x].Contenido[:])
+								n = bytes.Index(contenidoAux[:], []byte{0})
+								if n == -1 {
+									n = len(contenidoAux)
+								}
+								CadenaContenido := string(contenidoAux[:n])
+
+								EjecutarRen(id, CadenaPath, CadenaContenido)
+
+							}
+
 						}
 						//Volvemos a abrir el Disco en esta parte del codigo para
 						//poder escribir, Superbloque, bitacoras originales y backup original
