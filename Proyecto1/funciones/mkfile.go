@@ -202,7 +202,15 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 													PathAux := path
 													copy(PathChars[:], PathAux)
 													copy(BitacoraAux.Path[:], PathChars[:])
-													//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+													//Setemos el propietario a la bitacora
+													var ProperChars [16]byte
+													copy(ProperChars[:], idSesion)
+													copy(BitacoraAux.Proper[:], ProperChars[:])
+													//Setemos el grupo a la bitacora
+													var GrupoChars [16]byte
+													copy(GrupoChars[:], idGrupo)
+													copy(BitacoraAux.Grupo[:], GrupoChars[:])
+													//Seteamos el nombre de la operacion encargada de crear archivos "Mkfile"
 													var OperacionChars [16]byte
 													OperacionAux := "Mkfile"
 													copy(OperacionChars[:], OperacionAux)
@@ -481,7 +489,16 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 													PathAux := path
 													copy(PathChars[:], PathAux)
 													copy(BitacoraAux.Path[:], PathChars[:])
-													//Seteamos el nombre de la operacion encargada de crear carpetas "Mkdir"
+													//Setemos el propietario a la bitacora
+													var ProperChars [16]byte
+													copy(ProperChars[:], idSesion)
+													copy(BitacoraAux.Proper[:], ProperChars[:])
+													//Setemos el grupo a la bitacora
+													var GrupoChars [16]byte
+													copy(GrupoChars[:], idGrupo)
+													copy(BitacoraAux.Grupo[:], GrupoChars[:])
+
+													//Seteamos el nombre de la operacion encargada de crear archivos "Mkfile"
 													var OperacionChars [16]byte
 													OperacionAux := "Mkfile"
 													copy(OperacionChars[:], OperacionAux)

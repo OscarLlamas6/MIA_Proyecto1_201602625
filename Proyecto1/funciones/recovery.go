@@ -122,7 +122,33 @@ func EjecutarRecovery(id string) {
 									n = len(PathAux)
 								}
 								CadenaPath := string(PathAux[:n])
+
+								var ProperAux [16]byte
+								copy(ProperAux[:], ArregloBitacoras[x].Proper[:])
+								n = bytes.Index(ProperAux[:], []byte{0})
+								if n == -1 {
+									n = len(ProperAux)
+								}
+								PropietarioAux := string(ProperAux[:n])
+
+								var GrupoAux [16]byte
+								copy(GrupoAux[:], ArregloBitacoras[x].Grupo[:])
+								n = bytes.Index(GrupoAux[:], []byte{0})
+								if n == -1 {
+									n = len(GrupoAux)
+								}
+								NombreGrupoAux := string(GrupoAux[:n])
+
+								SesionReal := idSesion
+								GrupoReal := idGrupo
+
+								idSesion = PropietarioAux
+								idGrupo = NombreGrupoAux
+
 								EjecutarMkdir(id, CadenaPath, "-P")
+
+								idSesion = SesionReal
+								idGrupo = GrupoReal
 							}
 
 							var OperacionAux2 [16]byte
@@ -149,8 +175,32 @@ func EjecutarRecovery(id string) {
 								}
 								CadenaContenido := string(contenidoAux[:n])
 
+								var ProperAux [16]byte
+								copy(ProperAux[:], ArregloBitacoras[x].Proper[:])
+								n = bytes.Index(ProperAux[:], []byte{0})
+								if n == -1 {
+									n = len(ProperAux)
+								}
+								PropietarioAux := string(ProperAux[:n])
+
+								var GrupoAux [16]byte
+								copy(GrupoAux[:], ArregloBitacoras[x].Grupo[:])
+								n = bytes.Index(GrupoAux[:], []byte{0})
+								if n == -1 {
+									n = len(GrupoAux)
+								}
+								NombreGrupoAux := string(GrupoAux[:n])
+
+								SesionReal := idSesion
+								GrupoReal := idGrupo
+
+								idSesion = PropietarioAux
+								idGrupo = NombreGrupoAux
+
 								EjecutarMkfile(id, CadenaPath, ValorSize, CadenaContenido, "-P")
 
+								idSesion = SesionReal
+								idGrupo = GrupoReal
 							}
 
 							var OperacionAux3 [16]byte
