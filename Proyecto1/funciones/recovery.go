@@ -231,6 +231,25 @@ func EjecutarRecovery(id string) {
 
 							}
 
+							var OperacionAux7 [16]byte
+							cadena7 := "Chgrp"
+							copy(OperacionAux7[:], cadena7)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux7[:]) {
+
+								n := bytes.Index(ArregloBitacoras[x].Contenido[:], []byte{0})
+								if n == -1 {
+									n = len(ArregloBitacoras[x].Contenido[:])
+								}
+								Contenido := string(ArregloBitacoras[x].Contenido[:n])
+								Atributos := strings.Split(Contenido, ",")
+								NameAux := Atributos[0]
+								GrupoAux := Atributos[1]
+
+								EjecutarChgrp(NameAux, GrupoAux, id)
+
+							}
+
 						}
 						//Volvemos a abrir el Disco en esta parte del codigo para
 						//poder escribir, Superbloque, bitacoras originales y backup original

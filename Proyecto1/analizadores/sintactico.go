@@ -392,7 +392,7 @@ func inicio() {
 		ejChgrp = true
 		paramChgrp()
 		if ejChgrp {
-			funciones.EjecutarChgrp(vUser, vGroup)
+			funciones.EjecutarChgrp(vUser, vGroup, vID)
 			resetearBanderas()
 			resetearValores()
 		}
@@ -1265,6 +1265,22 @@ func paramChgrp() {
 			ejChgrp = false
 			syntaxError = true
 		}
+	} else if tokenCorrecto(tokenAux, "TK_PID") {
+		tokenAux = nextToken()
+		if tokenCorrecto(tokenAux, "TK_ASIG") {
+			tokenAux = nextToken()
+			if tokenCorrecto(tokenAux, "TK_ID") {
+				//SETEAR ID
+				vID = tokenAux.GetLexema()
+				otroParamChgrp()
+			} else {
+				ejChgrp = false
+				syntaxError = true
+			}
+		} else {
+			ejChgrp = false
+			syntaxError = true
+		}
 	} else {
 		ejChgrp = false
 		syntaxError = true
@@ -1274,7 +1290,7 @@ func paramChgrp() {
 
 func otroParamChgrp() {
 	if token < (len(tokens) - 1) {
-		if tokens[token+1].GetTipo() == "TK_USR" || tokens[token+1].GetTipo() == "TK_GRP" {
+		if tokens[token+1].GetTipo() == "TK_USR" || tokens[token+1].GetTipo() == "TK_GRP" || tokens[token+1].GetTipo() == "TK_PID" {
 			paramChgrp()
 		}
 	}

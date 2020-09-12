@@ -23,11 +23,11 @@ func EjecutarRmusr(name string, id string) {
 
 			if len(name) <= 10 {
 
-				if UsuarioYaExiste := ExisteUsuario(name, id); UsuarioYaExiste {
+				if IDYaRegistrado(id) {
 
 					if name != "root" {
 
-						if IDYaRegistrado(id) {
+						if UsuarioYaExiste := ExisteUsuario(name, id); UsuarioYaExiste {
 
 							NameAux, PathAux := GetDatosPart(id)
 
@@ -390,9 +390,9 @@ func EjecutarRmusr(name string, id string) {
 									//Seteamos el tipo con un 1 (1 significa carpeta, 2 significa archivo)
 									BitacoraAux.Tipo = 0
 									//Setemos el contenido
-									ContenidoMkuser := name
+									ContenidoRmusr := name
 									var ContenidoChars [300]byte
-									copy(ContenidoChars[:], ContenidoMkuser)
+									copy(ContenidoChars[:], ContenidoRmusr)
 									copy(BitacoraAux.Contenido[:], ContenidoChars[:])
 									BitacoraAux.Size = 0
 									//Seteamo la fecha de creación de la bitácora
@@ -878,7 +878,7 @@ func EjecutarRmusr(name string, id string) {
 							}
 
 						} else {
-							color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
+							color.Printf("@{!r}No existe ningun usuario registrado con el nombre @{!y}%v\n", name)
 						}
 
 					} else {
@@ -886,7 +886,7 @@ func EjecutarRmusr(name string, id string) {
 					}
 
 				} else {
-					color.Printf("@{!r}No existe ningun usuario registrado con el nombre @{!y}%v\n", name)
+					color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
 				}
 
 			} else {
