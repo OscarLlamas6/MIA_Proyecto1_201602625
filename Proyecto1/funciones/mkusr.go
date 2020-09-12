@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 	"unsafe"
@@ -887,7 +888,7 @@ func ExisteUsuario(name string, id string) bool {
 			split := strings.Split(CadenaContenido, "\n")
 			for _, s := range split {
 				registro := strings.Split(s, ",")
-				if registro[1] == "U" {
+				if registro[1] == "U" && registro[0] != "0" {
 					if registro[3] == name {
 						fileMBR.Close()
 						return true
@@ -999,7 +1000,7 @@ func ExisteUsuario(name string, id string) bool {
 			split := strings.Split(CadenaContenido, "\n")
 			for _, s := range split {
 				registro := strings.Split(s, ",")
-				if registro[1] == "U" {
+				if registro[1] == "U" && registro[0] != "0" {
 					if registro[3] == name {
 						fileMBR.Close()
 						return true
@@ -1128,7 +1129,7 @@ func ExisteGrupo(grupo string, id string) bool {
 			split := strings.Split(CadenaContenido, "\n")
 			for _, s := range split {
 				registro := strings.Split(s, ",")
-				if registro[1] == "G" {
+				if registro[1] == "G" && registro[0] != "0" {
 					if registro[2] == grupo {
 						fileMBR.Close()
 						return true
@@ -1240,7 +1241,7 @@ func ExisteGrupo(grupo string, id string) bool {
 			split := strings.Split(CadenaContenido, "\n")
 			for _, s := range split {
 				registro := strings.Split(s, ",")
-				if registro[1] == "G" {
+				if registro[1] == "G" && registro[0] != "0" {
 					if registro[2] == grupo {
 						fileMBR.Close()
 						return true
@@ -1372,7 +1373,13 @@ func NumeroUsuarios(id string) int {
 			for _, s := range split {
 				registro := strings.Split(s, ",")
 				if registro[0] != "0" && registro[1] == "U" {
-					Contador++
+					i, err := strconv.Atoi(registro[0])
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+						return 0
+					}
+					Contador = i
 				}
 
 			}
@@ -1483,7 +1490,13 @@ func NumeroUsuarios(id string) int {
 			for _, s := range split {
 				registro := strings.Split(s, ",")
 				if registro[0] != "0" && registro[1] == "U" {
-					Contador++
+					i, err := strconv.Atoi(registro[0])
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+						return 0
+					}
+					Contador = i
 				}
 
 			}

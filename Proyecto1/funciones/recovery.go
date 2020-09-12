@@ -215,6 +215,22 @@ func EjecutarRecovery(id string) {
 
 							}
 
+							var OperacionAux6 [16]byte
+							cadena6 := "Rmusr"
+							copy(OperacionAux6[:], cadena6)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux6[:]) {
+
+								n := bytes.Index(ArregloBitacoras[x].Contenido[:], []byte{0})
+								if n == -1 {
+									n = len(ArregloBitacoras[x].Contenido[:])
+								}
+								Contenido := string(ArregloBitacoras[x].Contenido[:n])
+
+								EjecutarRmusr(Contenido, id)
+
+							}
+
 						}
 						//Volvemos a abrir el Disco en esta parte del codigo para
 						//poder escribir, Superbloque, bitacoras originales y backup original

@@ -154,7 +154,7 @@ func VerificarLogin(name string, password string, id string) bool {
 			split := strings.Split(CadenaContenido, "\n")
 			for _, s := range split {
 				registro := strings.Split(s, ",")
-				if registro[1] == "U" {
+				if registro[1] == "U" && registro[0] != "0" {
 					if registro[3] == name && registro[4] == password {
 						fileMBR.Close()
 						idSesion = name
@@ -268,7 +268,7 @@ func VerificarLogin(name string, password string, id string) bool {
 			split := strings.Split(CadenaContenido, "\n")
 			for _, s := range split {
 				registro := strings.Split(s, ",")
-				if registro[1] == "U" {
+				if registro[1] == "U" && registro[0] != "0" {
 					if registro[3] == name && registro[4] == password {
 						fileMBR.Close()
 						idSesion = name

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 	"unsafe"
@@ -884,7 +885,13 @@ func NumeroGrupos(id string) int {
 			for _, s := range split {
 				registro := strings.Split(s, ",")
 				if registro[0] != "0" && registro[1] == "G" {
-					Contador++
+					i, err := strconv.Atoi(registro[0])
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+						return 0
+					}
+					Contador = i
 				}
 
 			}
@@ -995,7 +1002,13 @@ func NumeroGrupos(id string) int {
 			for _, s := range split {
 				registro := strings.Split(s, ",")
 				if registro[0] != "0" && registro[1] == "G" {
-					Contador++
+					i, err := strconv.Atoi(registro[0])
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+						return 0
+					}
+					Contador = i
 				}
 
 			}
