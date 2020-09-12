@@ -300,6 +300,22 @@ func EjecutarRecovery(id string) {
 
 							}
 
+							var OperacionAux8 [16]byte
+							cadena8 := "Rmgrp"
+							copy(OperacionAux8[:], cadena8)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux8[:]) {
+
+								n := bytes.Index(ArregloBitacoras[x].Contenido[:], []byte{0})
+								if n == -1 {
+									n = len(ArregloBitacoras[x].Contenido[:])
+								}
+								Contenido := string(ArregloBitacoras[x].Contenido[:n])
+
+								EjecutarRmgrp(Contenido, id)
+
+							}
+
 						}
 						//Volvemos a abrir el Disco en esta parte del codigo para
 						//poder escribir, Superbloque, bitacoras originales y backup original
