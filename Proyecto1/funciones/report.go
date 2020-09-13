@@ -55,6 +55,8 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteBitacora(path, ruta, id)
 				} else if strings.ToLower(nombre) == "ls" {
 					EjecutarLS(ruta, id)
+				} else if strings.ToLower(nombre) == "directorio" {
+					ReporteTreeDirectorio(path, "/", id)
 				}
 			} else {
 				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)
@@ -1198,7 +1200,6 @@ func EscribirTreeComplete(MBRfile *os.File, AVDroot *estructuras.AVD, extension 
 
 	fmt.Fprint(w, `digraph Tree {
 		node [shape=plaintext];
-		rankdir =LR;
 		`)
 
 	///////// AQUI COMENZAMOS A RECORRER TODO EL SISTEMA LWH /////////////////////////////////
@@ -1818,7 +1819,6 @@ func EscribirTreeDirectorio(MBRfile *os.File, AVDroot *estructuras.AVD, extensio
 
 	fmt.Fprint(w, `digraph Tree {
 		node [shape=plaintext];
-		rankdir =LR;
 		`)
 
 	///////// AQUI COMENZAMOS A RECORRER TODO EL SISTEMA LWH /////////////////////////////////
@@ -2181,7 +2181,6 @@ func EscribirTreeFile(fileMBR *os.File, SB1 *estructuras.Superblock, extension s
 
 	fmt.Fprint(w, `digraph Tree {
 		node [shape=plaintext];
-		rankdir =LR;
 		`)
 
 	//////// SETEAMOS VARIABLES A CERO ////////////////////////////
