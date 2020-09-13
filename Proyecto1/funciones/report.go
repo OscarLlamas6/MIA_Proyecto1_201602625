@@ -1514,8 +1514,10 @@ func ReporteTreeDirectorio(path string, ruta string, id string) {
 
 		if strings.HasPrefix(ruta, "/") {
 
-			if last := len(ruta) - 1; last >= 0 && ruta[last] == '/' {
-				ruta = ruta[:last]
+			if ruta != "/" { // si no es root quita slash al final
+				if last := len(ruta) - 1; last >= 0 && ruta[last] == '/' {
+					ruta = ruta[:last]
+				}
 			}
 
 			extension := filepath.Ext(path)

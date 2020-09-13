@@ -854,7 +854,7 @@ func EjecutarRmgrp(name string, id string) {
 		}
 
 	} else {
-		color.Println("@{!r}Se necesita de una sesión root activa para ejecutar la función RMUSR.")
+		color.Println("@{!r}Se necesita de una sesión root activa para ejecutar la función RMGRP.")
 	}
 
 }

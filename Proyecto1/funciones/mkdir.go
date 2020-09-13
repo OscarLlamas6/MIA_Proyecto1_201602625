@@ -127,7 +127,7 @@ func EjecutarMkdir(id string, path string, p string) {
 
 										if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
 
-											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 												if len(carpetas[i]) <= 20 {
 
@@ -187,7 +187,7 @@ func EjecutarMkdir(id string, path string, p string) {
 
 									if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
 
-										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 											if len(carpetas[len(carpetas)-1]) <= 20 {
 
@@ -361,7 +361,7 @@ func EjecutarMkdir(id string, path string, p string) {
 
 										if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
 
-											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 												if len(carpetas[i]) <= 20 {
 
@@ -421,7 +421,7 @@ func EjecutarMkdir(id string, path string, p string) {
 
 									if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
 
-										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 											if len(carpetas[len(carpetas)-1]) <= 20 {
 
@@ -820,16 +820,27 @@ func EscrituraPropietarioDir(Pavd *estructuras.AVD) bool {
 }
 
 //EscrituraGrupoDir verifica si un usuario tiene permisos sobre un directorio por ser parte del grupo
-func EscrituraGrupoDir(Pavd *estructuras.AVD) bool {
+func EscrituraGrupoDir(Pavd *estructuras.AVD, id string) bool {
 
 	var chars [20]byte
 	copy(chars[:], idGrupo)
-	//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
-	if string(Pavd.Grupo[:]) == string(chars[:]) {
-		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
-		if Pavd.PermisoG == 2 || Pavd.PermisoG == 3 || Pavd.PermisoG == 6 || Pavd.PermisoG == 7 {
-			return true
+
+	n := bytes.Index(chars[:], []byte{0})
+	if n == -1 {
+		n = len(chars)
+	}
+	GrupoAux := string(chars[:n])
+
+	if GrupoExiste := ExisteGrupo(GrupoAux, id); GrupoExiste {
+
+		//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
+		if string(Pavd.Grupo[:]) == string(chars[:]) {
+			//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+			if Pavd.PermisoG == 2 || Pavd.PermisoG == 3 || Pavd.PermisoG == 6 || Pavd.PermisoG == 7 {
+				return true
+			}
 		}
+
 	}
 
 	return false

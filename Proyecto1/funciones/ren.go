@@ -265,7 +265,7 @@ func RenameFile(id string, path string, name string) {
 										return
 									}
 
-									if sesionRoot || EscrituraPropietarioFile(&InodoAux) || EscrituraGrupoFile(&InodoAux) || EscrituraOtrosFile(&InodoAux) {
+									if sesionRoot || EscrituraPropietarioFile(&InodoAux) || EscrituraGrupoFile(&InodoAux, id) || EscrituraOtrosFile(&InodoAux) {
 
 										if YaExiste := ExisteFile(name, int(ApuntadorAVD), PathAux); !YaExiste {
 
@@ -570,7 +570,7 @@ func RenameFile(id string, path string, name string) {
 										return
 									}
 
-									if sesionRoot || EscrituraPropietarioFile(&InodoAux) || EscrituraGrupoFile(&InodoAux) || EscrituraOtrosFile(&InodoAux) {
+									if sesionRoot || EscrituraPropietarioFile(&InodoAux) || EscrituraGrupoFile(&InodoAux, id) || EscrituraOtrosFile(&InodoAux) {
 
 										if YaExiste := ExisteFile(name, int(ApuntadorAVD), PathAux); !YaExiste {
 
@@ -885,7 +885,7 @@ func RenameDir(id string, path string, name string) {
 							return
 						}
 
-						if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+						if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 							//Cambiar el nombre a AVD aux y a sus extensiones si las tuviera
 
@@ -1160,7 +1160,7 @@ func RenameDir(id string, path string, name string) {
 							return
 						}
 
-						if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+						if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 							//Cambiar el nombre a AVD aux y a sus extensiones si las tuviera
 

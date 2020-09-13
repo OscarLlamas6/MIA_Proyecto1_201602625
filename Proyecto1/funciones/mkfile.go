@@ -124,7 +124,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 
 										if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
 
-											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 												if len(carpetas[i]) <= 20 {
 
@@ -185,7 +185,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 
 									if SB1.FreeInodos > 0 && SB1.FreeBloques > 0 {
 
-										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 											if EsCorrecto, Fsize := SizeCorrecto(size); EsCorrecto {
 
@@ -411,7 +411,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 
 										if SB1.FreeAVDS > 0 && SB1.FreeDDS > 0 {
 
-											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+											if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 												if len(carpetas[i]) <= 20 {
 
@@ -472,7 +472,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 
 									if SB1.FreeInodos > 0 && SB1.FreeBloques > 0 {
 
-										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux) || EscrituraOtrosDir(&AVDAux) {
+										if sesionRoot || EscrituraPropietarioDir(&AVDAux) || EscrituraGrupoDir(&AVDAux, id) || EscrituraOtrosDir(&AVDAux) {
 
 											if EsCorrecto, Fsize := SizeCorrecto(size); EsCorrecto {
 

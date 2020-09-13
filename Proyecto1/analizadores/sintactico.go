@@ -1764,7 +1764,7 @@ func paramFind() {
 		tokenAux = nextToken()
 		if tokenCorrecto(tokenAux, "TK_ASIG") {
 			tokenAux = nextToken()
-			if tokenCorrecto(tokenAux, "TK_DIR") || tokenCorrecto(tokenAux, "TK_ASTERISCO") || tokenCorrecto(tokenAux, "TK_ID") {
+			if tokenCorrecto(tokenAux, "TK_DIR") || tokenCorrecto(tokenAux, "TK_ASTERISCO") || tokenCorrecto(tokenAux, "TK_ID") || tokenCorrecto(tokenAux, "TK_FILE") {
 				//SETEAR NOMBRE
 				vNombre = tokenAux.GetLexema()
 				otroParamFind()

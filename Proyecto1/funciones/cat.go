@@ -214,7 +214,7 @@ func EjecutarCat(id string, lista *[]string) {
 											return
 										}
 
-										if sesionRoot || LecturaPropietarioFile(&InodoAux) || LecturaGrupoFile(&InodoAux) || LecturaOtrosFile(&InodoAux) {
+										if sesionRoot || LecturaPropietarioFile(&InodoAux) || LecturaGrupoFile(&InodoAux, id) || LecturaOtrosFile(&InodoAux) {
 
 											Continuar2 := true
 
@@ -502,7 +502,7 @@ func EjecutarCat(id string, lista *[]string) {
 											return
 										}
 
-										if sesionRoot || LecturaPropietarioFile(&InodoAux) || LecturaGrupoFile(&InodoAux) || LecturaOtrosFile(&InodoAux) {
+										if sesionRoot || LecturaPropietarioFile(&InodoAux) || LecturaGrupoFile(&InodoAux, id) || LecturaOtrosFile(&InodoAux) {
 
 											Continuar2 := true
 
@@ -633,15 +633,24 @@ func LecturaPropietarioFile(InodoAux *estructuras.Inodo) bool {
 }
 
 //LecturaGrupoFile verifica si un usuario tiene permisos sobre un directorio por ser parte del grupo
-func LecturaGrupoFile(InodoAux *estructuras.Inodo) bool {
+func LecturaGrupoFile(InodoAux *estructuras.Inodo, id string) bool {
 
 	var chars [20]byte
 	copy(chars[:], idGrupo)
-	//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
-	if string(InodoAux.Grupo[:]) == string(chars[:]) {
-		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
-		if InodoAux.PermisoG == 4 || InodoAux.PermisoG == 5 || InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
-			return true
+
+	n := bytes.Index(chars[:], []byte{0})
+	if n == -1 {
+		n = len(chars)
+	}
+	GrupoAux := string(chars[:n])
+
+	if GrupoExiste := ExisteGrupo(GrupoAux, id); GrupoExiste {
+		//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
+		if string(InodoAux.Grupo[:]) == string(chars[:]) {
+			//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+			if InodoAux.PermisoG == 4 || InodoAux.PermisoG == 5 || InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
+				return true
+			}
 		}
 	}
 
@@ -683,16 +692,26 @@ func EscrituraPropietarioFile(InodoAux *estructuras.Inodo) bool {
 }
 
 //EscrituraGrupoFile verifica si un usuario tiene permisos sobre un directorio por ser parte del grupo
-func EscrituraGrupoFile(InodoAux *estructuras.Inodo) bool {
+func EscrituraGrupoFile(InodoAux *estructuras.Inodo, id string) bool {
 
 	var chars [20]byte
 	copy(chars[:], idGrupo)
-	//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
-	if string(InodoAux.Grupo[:]) == string(chars[:]) {
-		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
-		if InodoAux.PermisoG == 2 || InodoAux.PermisoG == 3 || InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
-			return true
+
+	n := bytes.Index(chars[:], []byte{0})
+	if n == -1 {
+		n = len(chars)
+	}
+	GrupoAux := string(chars[:n])
+
+	if GrupoExiste := ExisteGrupo(GrupoAux, id); GrupoExiste {
+		//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
+		if string(InodoAux.Grupo[:]) == string(chars[:]) {
+			//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+			if InodoAux.PermisoG == 2 || InodoAux.PermisoG == 3 || InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
+				return true
+			}
 		}
+
 	}
 
 	return false
