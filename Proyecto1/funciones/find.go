@@ -1441,7 +1441,7 @@ func RecorrerAVDRecursivo(file *os.File, AVDAux *estructuras.AVD) {
 //RecorrerAVDExtRecursivo recorre la extensión del AVD
 func RecorrerAVDExtRecursivo(file *os.File, AVDAux *estructuras.AVD) {
 
-	color.Printf("@{!c}%v|%v\n", cadenaConsola, string(AVDAux.NombreDir[:]))
+	//color.Printf("@{!c}%v|%v\n", cadenaConsola, string(AVDAux.NombreDir[:]))
 
 	for i := 0; i < 6; i++ {
 
@@ -1599,7 +1599,7 @@ func RecorrerAVDRecursivoCaso1(file *os.File, AVDAux *estructuras.AVD) {
 //RecorrerAVDExtRecursivoCaso1 recorre la extensión del AVD
 func RecorrerAVDExtRecursivoCaso1(file *os.File, AVDAux *estructuras.AVD) {
 
-	color.Printf("@{!c}%v|%v\n", cadenaConsola, string(AVDAux.NombreDir[:]))
+	//color.Printf("@{!c}%v|%v\n", cadenaConsola, string(AVDAux.NombreDir[:]))
 
 	for i := 0; i < 6; i++ {
 
@@ -1767,7 +1767,7 @@ func RecorrerAVDRecursivoCaso2(file *os.File, AVDAux *estructuras.AVD, nombre st
 //RecorrerAVDExtRecursivoCaso2 recorre la extensión del AVD
 func RecorrerAVDExtRecursivoCaso2(file *os.File, AVDAux *estructuras.AVD, nombre string) {
 
-	color.Printf("@{!c}%v|%v\n", cadenaConsola, string(AVDAux.NombreDir[:]))
+	//color.Printf("@{!c}%v|%v\n", cadenaConsola, string(AVDAux.NombreDir[:]))
 
 	for i := 0; i < 6; i++ {
 

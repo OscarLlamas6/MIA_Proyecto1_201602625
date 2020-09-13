@@ -25,7 +25,7 @@ var (
 //EjecutarReporte verifica el tipo de reporte segun el parametro NOMBRE
 func EjecutarReporte(nombre string, path string, ruta string, id string) {
 
-	if path != "" && nombre != "" && id != "" {
+	if nombre != "" && id != "" {
 		if err := os.MkdirAll(filepath.Dir(path), 0770); err != nil { //verificamos que se pueda construir el path
 			fmt.Printf("Path invalido")
 		} else {
@@ -53,6 +53,8 @@ func EjecutarReporte(nombre string, path string, ruta string, id string) {
 					ReporteTreeFile(path, ruta, id)
 				} else if strings.ToLower(nombre) == "bitacora" {
 					ReporteBitacora(path, ruta, id)
+				} else if strings.ToLower(nombre) == "ls" {
+					EjecutarLS(ruta, id)
 				}
 			} else {
 				color.Printf("@{!r}No hay ninguna partición montada con el id: @{!y}%v\n", id)

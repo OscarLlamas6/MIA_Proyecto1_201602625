@@ -435,6 +435,11 @@ func Formatear(PartStart int, PartSize int, tipo string, path string) {
 
 		file.Close()
 
+		sesionActiva = false
+		sesionRoot = false
+		idSesion = ""
+		idGrupo = ""
+
 		color.Println("@{!c}Sistema de archivos LWH instalado correctamente.")
 
 	} else {
