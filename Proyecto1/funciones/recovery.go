@@ -316,6 +316,58 @@ func EjecutarRecovery(id string) {
 
 							}
 
+							var OperacionAux9 [16]byte
+							cadena9 := "Chmod"
+							copy(OperacionAux9[:], cadena9)
+
+							if string(ArregloBitacoras[x].Operacion[:]) == string(OperacionAux9[:]) {
+
+								n := bytes.Index(ArregloBitacoras[x].Contenido[:], []byte{0})
+								if n == -1 {
+									n = len(ArregloBitacoras[x].Contenido[:])
+								}
+								Contenido := string(ArregloBitacoras[x].Contenido[:n])
+								Atributos := strings.Split(Contenido, ",")
+								UGOaux := Atributos[0]
+								Raux := Atributos[1]
+
+								var PathAux [300]byte
+								copy(PathAux[:], ArregloBitacoras[x].Path[:])
+								n = bytes.Index(PathAux[:], []byte{0})
+								if n == -1 {
+									n = len(PathAux)
+								}
+								CadenaPath := string(PathAux[:n])
+
+								var ProperAux [16]byte
+								copy(ProperAux[:], ArregloBitacoras[x].Proper[:])
+								n = bytes.Index(ProperAux[:], []byte{0})
+								if n == -1 {
+									n = len(ProperAux)
+								}
+								PropietarioAux := string(ProperAux[:n])
+
+								var GrupoAux [16]byte
+								copy(GrupoAux[:], ArregloBitacoras[x].Grupo[:])
+								n = bytes.Index(GrupoAux[:], []byte{0})
+								if n == -1 {
+									n = len(GrupoAux)
+								}
+								NombreGrupoAux := string(GrupoAux[:n])
+
+								SesionReal := idSesion
+								GrupoReal := idGrupo
+
+								idSesion = PropietarioAux
+								idGrupo = NombreGrupoAux
+
+								EjecutarChmod(id, CadenaPath, UGOaux, Raux)
+
+								idSesion = SesionReal
+								idGrupo = GrupoReal
+
+							}
+
 						}
 						//Volvemos a abrir el Disco en esta parte del codigo para
 						//poder escribir, Superbloque, bitacoras originales y backup original

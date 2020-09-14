@@ -1073,6 +1073,6 @@ func LsDDRecursivo(file *os.File, DDaux *estructuras.DD) {
 //LsInodoRecursivo recorre el inodo
 func LsInodoRecursivo(file *os.File, InodoAux *estructuras.Inodo, fecha string, nombre string) {
 
-	color.Printf("@{!g}%v|@{!c}Permisos: @{!y}%v%v%v @{!c}Propietario: @{!y}%v @{!c}Grupo: @{!y}%v @{!c}Fecha: @{!y}%v @{!c}Nombre: @{!y}%v\n", cadenaConsola, InodoAux.PermisoU, InodoAux.PermisoG, InodoAux.PermisoO, string(InodoAux.Proper[:]), string(InodoAux.Grupo[:]), fecha, nombre)
+	color.Printf("@{!g}%v|@{!c}Permisos: @{!y}%v%v%v @{!c}Propietario: @{!y}%v @{!c}Grupo: @{!y}%v @{!c}Fecha: @{!y}%v @{!c}Nombre: @{!g}%v\n", cadenaConsola, InodoAux.PermisoU, InodoAux.PermisoG, InodoAux.PermisoO, string(InodoAux.Proper[:]), string(InodoAux.Grupo[:]), fecha, nombre)
 
 }
