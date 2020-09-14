@@ -893,7 +893,23 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 
 	} else {
 
-		if size == 0 {
+		if size == 0 && cadenaSize != "" {
+
+			//Si el size es cero, el archivo no contiene datos, por lo tanto no se le asigna ningun bloque
+			//y podemos proceder a guardarlo inmediatamente
+
+			newInodo.FileSize = 0
+			newInodo.NumeroBloques = 0
+			newInodo.ApuntadorIndirecto = 0
+
+			//Ahora toca escribir el struct Inodo en su posición correspondiente
+			file.Seek(int64(InodoPos+1), 0)
+			inodop := &newInodo
+			var binario bytes.Buffer
+			binary.Write(&binario, binary.BigEndian, inodop)
+			escribirBytes(file, binario.Bytes())
+
+		} else if size == 0 && cadenaSize == "" && cont == "" {
 
 			//Si el size es cero, el archivo no contiene datos, por lo tanto no se le asigna ningun bloque
 			//y podemos proceder a guardarlo inmediatamente

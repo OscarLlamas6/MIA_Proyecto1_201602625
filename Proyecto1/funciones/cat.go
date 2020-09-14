@@ -734,3 +734,63 @@ func EscrituraOtrosFile(InodoAux *estructuras.Inodo) bool {
 
 	return false
 }
+
+//LecturaYEscrituraPropietarioFile verifica si un usuario tiene permisos sobre un directorio por ser propietario
+func LecturaYEscrituraPropietarioFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idSesion)
+	//Verificamos si el usuario activo actualmente es el propietario, si no lo es automaticamente returnamos false
+	if string(InodoAux.Proper[:]) == string(chars[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoU == 6 || InodoAux.PermisoU == 7 {
+			return true
+		}
+	}
+
+	return false
+}
+
+//LecturaYEscrituraGrupoFile verifica si un usuario tiene permisos sobre un directorio por ser parte del grupo
+func LecturaYEscrituraGrupoFile(InodoAux *estructuras.Inodo, id string) bool {
+
+	var chars [20]byte
+	copy(chars[:], idGrupo)
+
+	n := bytes.Index(chars[:], []byte{0})
+	if n == -1 {
+		n = len(chars)
+	}
+	GrupoAux := string(chars[:n])
+
+	if GrupoExiste := ExisteGrupo(GrupoAux, id); GrupoExiste {
+		//Verificamos si el usuario activo actualmente es parte del grupo, si no lo es automaticamente retornamos false
+		if string(InodoAux.Grupo[:]) == string(chars[:]) {
+			//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+			if InodoAux.PermisoG == 6 || InodoAux.PermisoG == 7 {
+				return true
+			}
+		}
+
+	}
+
+	return false
+}
+
+//LecturaYEscrituraOtrosFile verifica si un usuario tiene permisos sobre un directorio por ser de la categoria "Otros"
+func LecturaYEscrituraOtrosFile(InodoAux *estructuras.Inodo) bool {
+
+	var chars [20]byte
+	copy(chars[:], idSesion)
+	var chars2 [20]byte
+	copy(chars2[:], idGrupo)
+	//Verificamos si el usuario activo actualmente no es propietario y tampoco parte del grupo, si lo es automaticamente retornamos false
+	if string(InodoAux.Proper[:]) != string(chars[:]) && string(InodoAux.Grupo[:]) != string(chars2[:]) {
+		//Si es el propietario verificamos que el directorio tenga permisos de escritura en el parámeto U
+		if InodoAux.PermisoO == 6 || InodoAux.PermisoO == 7 {
+			return true
+		}
+	}
+
+	return false
+}
