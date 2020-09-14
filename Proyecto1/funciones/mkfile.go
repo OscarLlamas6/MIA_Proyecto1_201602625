@@ -957,7 +957,7 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 				} else if size < len(cont) { //si size es menor que el tamaño de cont, cortamos cont hasta el tamaño de size
 
 					FileSize = size
-					contenido = contenido[:size]
+					contenido = cont[:size]
 
 				}
 

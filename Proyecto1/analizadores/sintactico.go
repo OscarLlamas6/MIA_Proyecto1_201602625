@@ -1435,7 +1435,7 @@ func paramEdit() {
 		tokenAux = nextToken()
 		if tokenCorrecto(tokenAux, "TK_ASIG") {
 			tokenAux = nextToken()
-			if tokenCorrecto(tokenAux, "TK_FILE") {
+			if tokenCorrecto(tokenAux, "TK_FILE") || tokenCorrecto(tokenAux, "TK_DIR") || tokenCorrecto(tokenAux, "TK_ID") {
 				//SETEAR CONTENIDO
 				vCont = tokenAux.GetLexema()
 				otroParamEdit()
