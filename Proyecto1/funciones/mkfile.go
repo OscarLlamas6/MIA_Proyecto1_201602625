@@ -253,7 +253,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 															} else if Fsize < len(cont) { //si size es menor que el tamaño de cont, cortamos cont hasta el tamaño de size
 
 																FileSize = Fsize
-																contenido = contenido[:Fsize]
+																contenido = cont[:Fsize]
 
 															}
 
@@ -541,7 +541,7 @@ func EjecutarMkfile(id string, path string, size string, cont string, p string) 
 															} else if Fsize < len(cont) { //si size es menor que el tamaño de cont, cortamos cont hasta el tamaño de size
 
 																FileSize = Fsize
-																contenido = contenido[:Fsize]
+																contenido = cont[:Fsize]
 
 															}
 
@@ -958,7 +958,6 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 
 					FileSize = size
 					contenido = cont[:size]
-
 				}
 
 			}
@@ -971,7 +970,8 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 			//esto para saber cuando bloques de datos vamos a usar
 			//Ejemplo: Si tenemos 52 caracteres, al dividirlo dentro de 25 obtenemos 2.08
 			//ese 0.08 nos obliga a tomar un 3er bloque, entonces la funcion Roundf, aproximaria 2.08 a 3
-			resultado := float64(len(contenido)) / float64(25)
+			CadenaContenido := contenido
+			resultado := float64(len(CadenaContenido)) / float64(25)
 			resultado = Roundf(resultado)
 			CantidadBloques := int32(resultado)
 			//esta variable nos ayudara al corrimiento de los caracteres
@@ -997,9 +997,9 @@ func CrearFile(file *os.File, sb *estructuras.Superblock, DDPadre int, nombre st
 				//Le pasamos el contenido desde x hasta x+25
 
 				if i != int(resultado-1) {
-					copy(newBloque.Data[:], contenido[x:x+25])
+					copy(newBloque.Data[:], CadenaContenido[x:x+25])
 				} else {
-					copy(newBloque.Data[:], contenido[x:])
+					copy(newBloque.Data[:], CadenaContenido[x:])
 				}
 
 				//Ahora toca escribir el struct BloqueDatos en su posición correspondiente
